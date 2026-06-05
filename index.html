@@ -1,0 +1,72 @@
+<html><head>
+	<meta charset="UTF-8">
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<title>Mazes of Stampadia 3D</title>
+    <meta property="og:image" content="https://www.kesiev.com/stampadia-mazes/images/og-image.png">
+    <meta property="og:description" content="A print-and-play roguelike first person dungeon crawler with a new challenge every day.">
+
+	<link rel="stylesheet" type="text/css" href="style/stylesheet.css">
+	<link rel="stylesheet" type="text/css" href="style/Seshat/stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="style/Ferrum/stylesheet.css">
+
+	<script src="js/jspdf.umd.min.js"></script>
+    <script src="js/svg2pdf.umd.min.js"></script>
+    <script src="js/fonts/Seshat-normal.js"></script>
+    <script src="js/fonts/Ferrum-normal.js"></script>
+
+	<script src="js/extras/qrcode.min.js"></script>
+
+	<script src="js/website.js"></script>
+	<script src="js/resources.js"></script>
+	<script src="js/helpers.js"></script>
+	<script src="js/languages.js"></script>
+	<script src="js/random.js"></script>
+	<script src="js/cardprinter.js"></script>
+	<script src="js/svg.js"></script>
+	<script src="js/printers/dungeon.js"></script>
+	<script src="js/debugtools.js"></script>
+
+	<script src="js/data.js"></script>
+	<script src="js/dungeon.js"></script>
+	<script src="js/crawler.js"></script>
+	<script src="js/deck.js"></script>
+	<script src="js/generator.js"></script>
+
+</head><body onload="onl()"></body></html>
+
+<body onload="onl()">
+	<div style="position: absolute;left: -1000px;">
+        <div style="font-family: Seshat;">Font loaded</div>
+        <div style="font-family: Garamond; font-weight: bold;">Font loaded</div>
+        <div style="font-family: Ferrum;">Font loaded</div>
+    </div>
+	<div id="diskcontainer">
+		<div id="disk"></div>
+	</div>
+	<div id="pleasewait"></div>
+    <div id="box">
+		<div id="header"></div>
+		<a class="downloadlink" id="title"></a>
+		<div class="ruler"><div id="progress"></div></div>
+		<div id="tips"></div>
+	</div>
+    <div id="topbar">
+        <div id="settings"></div>
+    </div>
+    <div id="confirmbar">
+        <div id="confirm"></div>
+    </div>
+     <div id="settingsmessage">
+        <div id="settingsmessagecontent"></div>
+    </div>
+    <div id="footer"></div>
+</body><script>
+function onl() {
+	let
+		website = new Website();
+
+	website.play();
+}
+</script>

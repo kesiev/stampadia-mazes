@@ -1,0 +1,484 @@
+<html><head>
+    <title>MOS3D Manual tool</title>
+    <meta charset="UTF-8">
+    <script src="../../js/data.js"></script>
+    <script src="js/jszip.min.js"></script>
+    <script src="js/jszip-utils.min.js"></script>
+    <script src="js/FileSaver.min.js"></script>
+</head><body onload="onl()">
+    <h2>MOS3D Manual Tool</h2>
+    <h3>HOWTO Generate a manual PDF</h3>
+    <ol>
+        <li>Put your translated manual txt file in the <tt>language/</tt> folder</li>
+        <li>Download the manual: <span id="languages"></span> <input type="checkbox" id="noimages"> Remove images</li>
+        <li>Open with LibreOffice</li>
+        <li>Confirm to repair</li>
+        <li>Check the layout</li>
+        <li>Export as PDF</li>
+    </ol>
+</body></html>
+<script>
+
+let
+    RESOURCESLIST=[
+        {id:"text",file:""},
+        {id:"icon-strength", file:"images/icon-strength.png", asBinary:true, addToPictures:"icon-strength.png", addToSymbols:"symbolStrength"},
+        {id:"icon-health", file:"images/icon-health.png", asBinary:true, addToPictures:"icon-health.png", addToSymbols:"symbolHealth"},
+        {id:"icon-gold", file:"images/icon-gold.png", asBinary:true, addToPictures:"icon-gold.png", addToSymbols:"symbolGold"},
+        {id:"icon-setA", file:"images/icon-setA.png", asBinary:true, addToPictures:"icon-setA.png", addToSymbols:"symbolSetA"},
+        {id:"icon-setB", file:"images/icon-setB.png", asBinary:true, addToPictures:"icon-setB.png", addToSymbols:"symbolSetB"},
+        {id:"icon-card1", file:"images/icon-card1.png", asBinary:true, addToPictures:"icon-card1.png", addToSymbols:"symbolCard1"},
+        {id:"icon-card2", file:"images/icon-card2.png", asBinary:true, addToPictures:"icon-card2.png", addToSymbols:"symbolCard2"},
+        {id:"icon-card3", file:"images/icon-card3.png", asBinary:true, addToPictures:"icon-card3.png", addToSymbols:"symbolCard3"},
+        {id:"icon-card14", file:"images/icon-card14.png", asBinary:true, addToPictures:"icon-card14.png", height:115, addToSymbols:"symbolCard14"},
+        {id:"icon-cardNone", file:"images/icon-cardNone.png", asBinary:true, addToPictures:"icon-cardNone.png", addToSymbols:"symbolCardNone"},
+        {id:"icon-fullChange", file:"images/icon-fullChange.png", asBinary:true, addToPictures:"icon-fullChange.png", width:477, height:115, addToSymbols:"symbolFullChange"},
+
+        {id:"icon-cellA", file:"images/icon-cellA.png", asBinary:true, addToPictures:"icon-cellA.png", addToSymbols:"symbolCellA"},
+        {id:"icon-cellX", file:"images/icon-cellX.png", asBinary:true, addToPictures:"icon-cellX.png", addToSymbols:"symbolCellX"},
+
+        {id:"icon-moveaction", file:"images/icon-moveaction.png", asBinary:true, addToPictures:"icon-moveaction.png", addToSymbols:"symbolMoveAction"},
+        {id:"icon-talkaction", file:"images/icon-talkaction.png", asBinary:true, addToPictures:"icon-talkaction.png", addToSymbols:"symbolTalkAction"},
+        {id:"icon-useaction", file:"images/icon-useaction.png", asBinary:true, addToPictures:"icon-useaction.png", addToSymbols:"symbolUseAction"},
+        {id:"icon-rotateaction", file:"images/icon-rotateaction.png", asBinary:true, addToPictures:"icon-rotateaction.png", addToSymbols:"symbolRotateAction"},
+        {id:"icon-teleportaction", file:"images/icon-teleportaction.png", asBinary:true, addToPictures:"icon-teleportaction.png", addToSymbols:"symbolTeleportAction"},
+
+        {id:"icon-actionStar", file:"images/icon-actionStar.png", asBinary:true, addToPictures:"icon-actionStar.png", width:164, addToSymbols:"symbolActionStar"},
+        {id:"icon-actionTab", file:"images/icon-actionTab.png", asBinary:true, addToPictures:"icon-actionTab.png", width:164, addToSymbols:"symbolActionTab"},
+        {id:"icon-changeWith", file:"images/icon-changeWith.png", asBinary:true, addToPictures:"icon-changeWith.png", width:115, addToSymbols:"symbolChangeWith"},
+        {id:"icon-resourcefish", file:"images/icon-resourcefish.png", asBinary:true, addToPictures:"icon-resourcefish.png", addToSymbols:"symbolResourceFish"},
+        {id:"icon-setvalue", file:"images/icon-setvalue.png", asBinary:true, addToPictures:"icon-setvalue.png", width:80, height:80, addToSymbols:"symbolSetValue"},
+        {id:"icon-offer", file:"images/icon-offer.png", asBinary:true, addToPictures:"icon-offer.png", addToSymbols:"symbolOffer"},
+        {id:"icon-effect", file:"images/icon-effect.png", asBinary:true, addToPictures:"icon-effect.png", addToSymbols:"symbolEffect"},
+        {id:"icon-curse", file:"images/icon-curse.png", asBinary:true, addToPictures:"icon-curse.png", addToSymbols:"symbolCurse"},
+
+        {id:"icon-1", file:"images/icon-1.png", asBinary:true, addToPictures:"icon-1.png",addToSymbols:"1" },
+        {id:"icon-2", file:"images/icon-2.png", asBinary:true, addToPictures:"icon-2.png",addToSymbols:"2" },
+        {id:"icon-3", file:"images/icon-3.png", asBinary:true, addToPictures:"icon-3.png",addToSymbols:"3" },
+        {id:"icon-4", file:"images/icon-4.png", asBinary:true, addToPictures:"icon-4.png",addToSymbols:"4" },
+        {id:"icon-5", file:"images/icon-5.png", asBinary:true, addToPictures:"icon-5.png",addToSymbols:"5" },
+        {id:"icon-6", file:"images/icon-6.png", asBinary:true, addToPictures:"icon-6.png",addToSymbols:"6" },
+        {id:"icon-7", file:"images/icon-7.png", asBinary:true, addToPictures:"icon-7.png",addToSymbols:"7" },
+        {id:"icon-8", file:"images/icon-8.png", asBinary:true, addToPictures:"icon-8.png",addToSymbols:"8" },
+        {id:"icon-9", file:"images/icon-9.png", asBinary:true, addToPictures:"icon-9.png",addToSymbols:"9" },
+        {id:"image-floppy", file:"images/image-floppy.png", asBinary:true, addToPictures:"image-floppy.png", addToImages:"floppy" },
+        {id:"image-setup1", file:"images/image-setup1.png", asBinary:true, addToPictures:"image-setup1.png", addToImages:"setup1" },
+        {id:"image-setup2", file:"images/image-setup2.png", asBinary:true, addToPictures:"image-setup2.png", addToImages:"setup2" },
+        {id:"image-sight1", file:"images/image-sight1.png", asBinary:true, addToPictures:"image-sight1.png", addToImages:"sight1" },
+        {id:"image-cards1", file:"images/image-cards1.png", asBinary:true, addToPictures:"image-cards1.png", addToImages:"cards1" },
+        {id:"image-cards2", file:"images/image-cards2.png", asBinary:true, addToPictures:"image-cards2.png", addToImages:"cards2" },
+        {id:"image-move1", file:"images/image-move1.png", asBinary:true, addToPictures:"image-move1.png", addToImages:"move1" },
+        {id:"image-teleport1", file:"images/image-teleport1.png", asBinary:true, addToPictures:"image-teleport1.png", addToImages:"teleport1" },
+        {id:"image-resources1", file:"images/image-resources1.png", asBinary:true, addToPictures:"image-resources1.png", addToImages:"resources1" },
+        {id:"image-resources2", file:"images/image-resources2.png", asBinary:true, addToPictures:"image-resources2.png", addToImages:"resources2" },
+        {id:"image-resources3", file:"images/image-resources3.png", asBinary:true, addToPictures:"image-resources3.png", addToImages:"resources3" },
+        {id:"image-change1", file:"images/image-change1.png", asBinary:true, addToPictures:"image-change1.png", addToImages:"change1" },
+        {id:"image-offer1", file:"images/image-offer1.png", asBinary:true, addToPictures:"image-offer1.png", addToImages:"offer1" },
+        {id:"image-end1", file:"images/image-end1.png", asBinary:true, addToPictures:"image-end1.png", addToImages:"end1" },
+        {id:"image-logo", file:"images/image-logo.png", asBinary:true, addToPictures:"image-logo.png", addToImages:"logo" },
+        {id:"image-epilogue1", file:"images/image-epilogue1.png", asBinary:true, addToPictures:"image-epilogue1.png", addToImages:"epilogue1" },
+        {id:"image-saveload1", file:"images/image-saveload1.png", asBinary:true, addToPictures:"image-saveload1.png", addToImages:"saveload1" },
+        {id:"image-translation-monster", file:"images/image-tranlsation-monster.png", asBinary:true, addToPictures:"image-tranlsation-monster.png", addToImages:"translation-monster" },
+        {id:"image-translation-dice", file:"images/image-tranlsation-dice.png", asBinary:true, addToPictures:"image-tranlsation-dice.png", addToImages:"translation-dice" },
+        {id:"image-translation-mystery", file:"images/image-tranlsation-mystery.png", asBinary:true, addToPictures:"image-tranlsation-mystery.png", addToImages:"translation-mystery" },
+    ];
+
+let TEMPLATE=
+`<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
+    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+    xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+    xmlns:ooo="http://openoffice.org/2004/office"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+    xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+    xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
+    xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+    xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
+    xmlns:rpt="http://openoffice.org/2005/report"
+    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+    xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
+    xmlns:ooow="http://openoffice.org/2004/writer"
+    xmlns:oooc="http://openoffice.org/2004/calc"
+    xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2"
+    xmlns:tableooo="http://openoffice.org/2009/table"
+    xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0"
+    xmlns:drawooo="http://openoffice.org/2010/draw"
+    xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0"
+    xmlns:field="urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0"
+    xmlns:math="http://www.w3.org/1998/Math/MathML"
+    xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0"
+    xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0"
+    xmlns:dom="http://www.w3.org/2001/xml-events"
+    xmlns:xforms="http://www.w3.org/2002/xforms"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:formx="urn:openoffice:names:experimental:ooxml-odf-interop:xmlns:form:1.0"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:grddl="http://www.w3.org/2003/g/data-view#"
+    xmlns:css3t="http://www.w3.org/TR/css3-text/"
+    xmlns:officeooo="http://openoffice.org/2009/office" office:version="1.3">
+    <office:scripts/>
+    <office:font-face-decls>
+        <style:font-face style:name="Ferrum" svg:font-family="Ferrum" style:font-pitch="variable"/>
+        <style:font-face style:name="Liberation Sans" svg:font-family="&apos;Liberation Sans&apos;" style:font-family-generic="swiss" style:font-pitch="variable"/>
+        <style:font-face style:name="Liberation Serif" svg:font-family="&apos;Liberation Serif&apos;" style:font-family-generic="roman" style:font-pitch="variable"/>
+        <style:font-face style:name="Lucida Sans" svg:font-family="&apos;Lucida Sans&apos;" style:font-family-generic="system" style:font-pitch="variable"/>
+        <style:font-face style:name="Lucida Sans1" svg:font-family="&apos;Lucida Sans&apos;" style:font-family-generic="swiss"/>
+        <style:font-face style:name="Microsoft YaHei" svg:font-family="&apos;Microsoft YaHei&apos;" style:font-family-generic="system" style:font-pitch="variable"/>
+        <style:font-face style:name="NSimSun" svg:font-family="NSimSun" style:font-family-generic="system" style:font-pitch="variable"/>
+        <style:font-face style:name="Seshat" svg:font-family="Seshat" style:font-family-generic="modern" style:font-pitch="variable"/>
+    </office:font-face-decls>
+    <office:automatic-styles>
+        <style:style style:name="P1" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:text-align="justify" style:justify-single-word="false"/>
+            <style:text-properties style:font-name="Seshat" officeooo:paragraph-rsid="00128921"/>
+        </style:style>
+        <style:style style:name="P2" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:text-align="justify" style:justify-single-word="false"/>
+            <style:text-properties style:font-name="Ferrum" fo:font-size="14pt" officeooo:paragraph-rsid="00128921" style:font-size-asian="14pt" style:font-size-complex="14pt"/>
+        </style:style>
+        <style:style style:name="P3" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:text-align="justify" style:justify-single-word="false"/>
+            <style:text-properties style:font-name="Seshat" fo:font-size="8pt" officeooo:paragraph-rsid="001513d1" style:font-size-asian="8pt" style:font-size-complex="8pt"/>
+        </style:style>
+        <style:style style:name="P4" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:text-align="center" style:justify-single-word="false"/>
+            <style:text-properties style:font-name="Seshat" officeooo:paragraph-rsid="00128921"/>
+        </style:style>
+        <style:style style:name="T1" style:family="text">
+            <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+        </style:style>
+        <style:style style:name="T2" style:family="text">
+            <style:text-properties style:font-name="Ferrum" fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt"/>
+        </style:style>
+        <style:style style:name="fr1" style:family="graphic" style:parent-style-name="Graphics">
+            <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit" style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="baseline" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" style:mirror="none" fo:clip="rect(0cm, 0cm, 0cm, 0cm)" draw:luminance="0%" draw:contrast="0%" draw:red="0%" draw:green="0%" draw:blue="0%" draw:gamma="100%" draw:color-inversion="false" draw:image-opacity="100%" draw:color-mode="standard"/>
+        </style:style>
+        <style:style style:name="fr2" style:family="graphic" style:parent-style-name="Graphics">
+            <style:graphic-properties fo:margin-top="0cm" fo:margin-bottom="0cm" style:vertical-pos="top" style:vertical-rel="paragraph" fo:padding="0cm" fo:border="none" style:mirror="none" fo:clip="rect(0cm, 0cm, 0cm, 0cm)" draw:luminance="0%" draw:contrast="0%" draw:red="0%" draw:green="0%" draw:blue="0%" draw:gamma="100%" draw:color-inversion="false" draw:image-opacity="100%" draw:color-mode="standard" draw:wrap-influence-on-position="once-concurrent" loext:allow-overlap="true"/>
+        </style:style>
+        <style:style style:name="Sect1" style:family="section">
+            <style:section-properties text:dont-balance-text-columns="false" style:editable="false">
+                <style:columns fo:column-count="2" fo:column-gap="0.5cm">
+                    <style:column style:rel-width="32767*" fo:start-indent="0cm" fo:end-indent="0.248cm"/>
+                    <style:column style:rel-width="32768*" fo:start-indent="0.248cm" fo:end-indent="0cm"/>
+                </style:columns>
+            </style:section-properties>
+        </style:style>
+        <style:style style:name="Tabella1" style:family="table">
+            <style:table-properties style:width="8.25cm" table:align="margins" fo:background-color="transparent">
+                <style:background-image/>
+            </style:table-properties>
+        </style:style>
+        <style:style style:name="Tabella1.A" style:family="table-column">
+            <style:table-column-properties style:column-width="8.25cm" style:rel-column-width="65535*"/>
+        </style:style>
+        <style:style style:name="Tabella1.1" style:family="table-row">
+            <style:table-row-properties fo:background-color="transparent">
+                <style:background-image/>
+            </style:table-row-properties>
+        </style:style>
+        <style:style style:name="Tabella1.A1" style:family="table-cell">
+            <style:table-cell-properties fo:background-color="#ffd8ce" fo:padding="0.097cm" fo:border="0.05pt solid #000000">
+                <style:background-image/>
+            </style:table-cell-properties>
+        </style:style>
+        <style:style style:name="Tabella2" style:family="table">
+            <style:table-properties style:width="8.25cm" table:align="margins"/>
+        </style:style>
+        <style:style style:name="Tabella2.A" style:family="table-column">
+            <style:table-column-properties style:column-width="8.25cm" style:rel-column-width="65535*"/>
+        </style:style>
+        <style:style style:name="Tabella2.1" style:family="table-row">
+            <style:table-row-properties fo:background-color="transparent">
+                <style:background-image/>
+            </style:table-row-properties>
+        </style:style>
+        <style:style style:name="Tabella2.A1" style:family="table-cell">
+            <style:table-cell-properties fo:padding="0.097cm" fo:border="0.05pt solid #000000"/>
+        </style:style>
+        <style:style style:name="PB" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:text-align="justify" style:justify-single-word="false" fo:break-before="page"/>
+        </style:style>
+        <text:list-style style:name="L1">
+            <text:list-level-style-bullet text:level="1" text:style-name="Bullet_20_Symbols" loext:num-list-format="%1%." text:bullet-char="•">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="0.6cm" fo:text-indent="-0.635cm" fo:margin-left="0.6cm"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+            <text:list-level-style-bullet text:level="2" text:style-name="Bullet_20_Symbols" loext:num-list-format="%2%." text:bullet-char="◦">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="0.9cm" fo:text-indent="-0.635cm" fo:margin-left="0.9cm"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+            <text:list-level-style-bullet text:level="3" text:style-name="Bullet_20_Symbols" loext:num-list-format="%2%." text:bullet-char="•">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="1.2cm" fo:text-indent="-0.635cm" fo:margin-left="1.2cm"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+        </text:list-style>
+    </office:automatic-styles>
+    <office:body>
+        <office:text>
+            <text:sequence-decls>
+                <text:sequence-decl text:display-outline-level="0" text:name="Illustration"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Table"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Text"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Drawing"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Figure"/>
+            </text:sequence-decls>
+            <text:section text:style-name="Sect1" text:name="Sezione1">
+            %CONTENT%
+            </text:section>
+        </office:text>
+    </office:body>
+</office:document-content>`
+
+EncodeXMLEscapeChars = function (OutPut) {
+    OutPut = OutPut.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    OutPut = OutPut.replace(/&(?!(amp;)|(lt;)|(gt;)|(quot;)|(#39;)|(apos;))/g, "&amp;");
+    OutPut = OutPut.replace(/([^\\])((\\\\)*)\\(?![\\/{])/g, "$1\\\\$2");  //replaces odd backslash(\\) with even.
+    return OutPut;
+};
+
+function loadResources(cb,id,resources) {
+    if (!id) id=0;
+    if (!resources) resources=[];
+    if (RESOURCESLIST[id]) {
+        const xmlhttp = new XMLHttpRequest();
+        if (RESOURCESLIST[id].asBinary)
+            xmlhttp.responseType = "arraybuffer";
+        xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4)
+                if ((xmlhttp.status == 200) || (xmlhttp.status == 0)) {
+                    if (RESOURCESLIST[id].asBinary)
+                        resources[RESOURCESLIST[id].id]=xmlhttp.response;
+                    else
+                        resources[RESOURCESLIST[id].id]=xmlhttp.responseText;
+                    loadResources(cb,id+1,resources)
+                }
+        };
+        xmlhttp.open("GET",RESOURCESLIST[id].file+"?"+Math.random(), true);
+        xmlhttp.send();
+    } else cb(resources);
+}
+
+function format(text) {
+    text=EncodeXMLEscapeChars(text);
+    text=text.replace(/\*\*([^\*\*]+)\*\*/g,function(f,f1){
+        return '<text:span text:style-name="T1">'+f1+'</text:span>';
+    });
+    return text;
+    
+}
+
+function simplify(word) {
+    return word.toLowerCase().replace(/[^a-zàeò]+/g,"");
+}
+
+function downloadManual(language) {
+    let noimages = document.getElementById("noimages").checked;
+    RESOURCESLIST[0].file="language/"+language+".txt";
+    loadResources(RESOURCES=>{
+        JSZipUtils.getBinaryContent('template/template.odt', function(err, data) {
+        if(err) {
+            throw err; // or handle err
+        }
+        JSZip.loadAsync(data).then(function (zip) {
+
+            // Prepare metadata
+            let
+                parts=RESOURCES.text.split("{TEXT}"),
+                metadata=JSON.parse(parts[0]),
+                originalMetadata=JSON.parse(parts[0]),
+                text=parts[1].trim();
+    
+            // Prepare resources
+            RESOURCESLIST.forEach(resource=>{
+                if (resource.addToPictures)
+                    zip.file("Pictures/"+resource.addToPictures,RESOURCES[resource.id]);
+                if (resource.addToSymbols)
+                    metadata.placeholders["symbol "+resource.addToSymbols]=noimages?"%%DELME%%":'<draw:frame draw:style-name="fr1" draw:name="{uuid}" text:anchor-type="as-char" svg:width="'+((resource.width || 100) * 0.00411)+'cm" svg:height="'+((resource.height || 100) * 0.00411) +'cm" draw:z-index="0"><draw:image xlink:href="Pictures/' + resource.addToPictures+'" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad" draw:mime-type="image/png"/></draw:frame>';
+                if (resource.addToImages)
+                    metadata.placeholders["image "+resource.addToImages]=noimages?"%%DELME%%":'<draw:frame draw:style-name="fr2" draw:name="{uuid}" text:anchor-type="char" svg:width="8.25cm" svg:height="4.288cm" draw:z-index="118"><draw:image xlink:href="Pictures/' + resource.addToPictures+'" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad" draw:mime-type="image/png"/></draw:frame>';
+
+            });
+
+            metadata.placeholders["boxOpen"] = '<table:table table:name="Tabella1" table:style-name="Tabella1"><table:table-column table:style-name="Tabella1.A"/><table:table-row table:style-name="Tabella1.1"><table:table-cell table:style-name="Tabella1.A1" office:value-type="string">';
+            metadata.placeholders["boxClose"] = '</table:table-cell></table:table-row></table:table>';
+
+            metadata.placeholders["boxOpenNotes"] = '<table:table table:name="Tabella2" table:style-name="Tabella2"><table:table-column table:style-name="Tabella2.A"/><table:table-row table:style-name="Tabella2.1"><table:table-cell table:style-name="Tabella2.A1" office:value-type="string">';
+            metadata.placeholders["boxCloseNotes"] = '</table:table-cell></table:table-row></table:table>';
+
+            metadata.placeholders["listStart"] = '<text:list xml:id="{uuid}" text:style-name="L1"><text:list-item>';
+            metadata.placeholders["listEnd"] = '</text:list-item></text:list>';
+            metadata.placeholders["listItemStart"] = '<text:list-item>';
+            metadata.placeholders["listItemEnd"] = '</text:list-item>';
+            metadata.placeholders["listItemNext"] = '</text:list-item><text:list-item>';
+            metadata.placeholders["listSubStart"] = '<text:list><text:list-item>';
+            metadata.placeholders["listSubEnd"] = '</text:list-item></text:list>';
+            metadata.placeholders["pageBreakStart"] = '<text:p text:style-name="PB"><text:span text:style-name="T2">';
+            metadata.placeholders["pageBreakEnd"] = '</text:span></text:p>';
+            metadata.placeholders["centerOpen"] = '';
+            metadata.placeholders["centerClose"] = '';
+
+            for (let k in CONFIG)
+                metadata.placeholders["config-"+k]=CONFIG[k]+"";
+
+            // Prepare word count and other indexes
+            let
+                reservedwords = [],
+                wordcounttext = text.replace(/\{[^}]+\}/g,"").match(/\b(\w+)\b/g),
+                wordcountindex = [{},{}];
+
+            for (let k in metadata.placeholders) {
+                let placeholder = metadata.placeholders[k];
+                if (placeholder[0]!="<") {
+                    let word=simplify(placeholder);
+                    if (!reservedwords[word]) reservedwords[word]=[];
+                    reservedwords[word].push(metadata.placeholders[k]+" ("+k+")");
+                }
+            }
+
+            let simplifiedWords=[];
+            wordcounttext.forEach(orgword=>{
+                if (typeof wordcountindex[orgword] != "function") {
+                    word=simplify(orgword);
+                    if (word.length>2) {
+                        if (reservedwords[word] && (typeof reservedwords[word] != "function")) console.warn("Word",orgword,"is in placeholder",reservedwords[word]);
+                        simplifiedWords.push(word);
+                    }
+                }
+            })
+
+            let ngrams=2;
+            for (let i=0;i<simplifiedWords.length;i++) {
+                for (let n=0;n<ngrams;n++) {
+                    let gram="";
+                    for (let g=0;g<=n;g++)
+                        gram+=simplifiedWords[i+g]+" ";
+                    gram=gram.trim();
+                    if (!wordcountindex[n][gram]) wordcountindex[n][gram]=0;
+                        wordcountindex[n][gram]++;
+                }
+            }
+
+            let chart=[];
+            for (var k in wordcountindex[1])
+                chart.push([wordcountindex[1][k],k]);
+            chart.sort((a,b)=>{
+                if (a[0]==b[0]) return 0;
+                else if (a[0]>b[0]) return -1;
+                else return 1;
+            })
+
+            console.log(chart);
+
+            // Format template
+            let
+                model="";
+
+            let
+                lines = text.split("\n"),
+                skipNextEmpty=false,
+                basefont = "P1";
+            lines.forEach(line => {
+                line=line.trim();
+                if (line) {
+                    if (line[0]=="#")
+                        model+='<text:p text:style-name="P2">'+format(line.substr(1).trim())+'</text:p>';
+                    else if (line.substr(0,7)=="{center") {
+                    } else if ((line.substr(0,4)=="{box")||(line.substr(0,5)=="{list")||(line.substr(0,10)=="{pageBreak"))
+                        model+=format(line);
+                    else
+                        model+='<text:p text:style-name="'+basefont+'">'+format(line)+"</text:p>\n";
+
+                    if (line.substr(0,11)=="{centerOpen")
+                        basefont = "P4";
+                    else if (line.substr(0,12)=="{centerClose")
+                        basefont = "P1";
+                    else if (line.substr(0,13)=="{boxOpenNotes")
+                        basefont = "P3";
+                    else if (line.substr(0,14)=="{boxCloseNotes")
+                        basefont = "P1";
+
+                    if (line.substr(0,7)=="{image ")
+                        skipNextEmpty=true;
+                    else
+                        skipNextEmpty=false;
+                } else if (skipNextEmpty)
+                    skipNextEmpty=false;
+                else model+='<text:p/>\n'
+            });
+
+            let uuid=0;
+            for (let i=0;i<3;i++)
+                model=model.replace(/\{([^}]+)\}/g,function(f,f1) {
+                    let
+                        parts = f1.split(":");
+                    if (parts[0] == "uuid") {
+                        uuid++;
+                        return "UUID"+uuid;
+                    } else {
+                        let value = metadata.placeholders[parts[0]];
+                        if (value) {
+                            delete originalMetadata.placeholders[parts[0]];
+                            if (parts[1] == "capital")
+                                value = value[0].toUpperCase()+value.substr(1);
+                            if (parts[1] == "format")
+                                value = format(value);
+                            // return "*";
+                            return value;
+                        } else {
+                            console.warn("Placeholder",f1,"not found");
+                            return f;
+                        }
+                    }
+                });
+
+
+            for (var k in originalMetadata.placeholders)
+                console.warn("Unused placeholder",k,":",originalMetadata.placeholders[k]);
+
+            if (noimages)
+                model = model.replace(/ %%DELME%% /g," ").replace(/[ ]*%%DELME%%[ ]*/g,"");
+
+            console.log(model);
+
+            // Apply template
+            text = TEMPLATE.replace(/%CONTENT%/,model);
+            zip.file("content.xml",text);
+        
+            // Save
+            zip.generateAsync({type:"blob"})
+                .then(function (blob) {
+                    saveAs(blob, "manual-"+language+".odt");
+                });
+
+            /*
+            zip.file("content.xml").async("string").then(text=>{
+                text = text.replace(/_content.*content_/g,model);
+                zip.file("content.xml",text);
+                zip.generateAsync({type:"blob"})
+                    .then(function (blob) {
+                        saveAs(blob, "manual-it.odt");
+                    });
+            })
+            */
+        });
+    })
+});
+
+}
+
+function onl() {
+    let html="";
+    CONFIG.LANGUAGES.forEach(language=>{
+        html+="<input type=button onclick=\"downloadManual('"+language.id+"')\" value='"+language.label+"'> ";
+    })
+   document.getElementById("languages").innerHTML=html;
+}
+</script>

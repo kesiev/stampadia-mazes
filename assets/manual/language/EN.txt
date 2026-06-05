@@ -1,0 +1,304 @@
+{
+  "placeholders":{
+    "manualVersion":"0.1b",
+    "place":"Stampadia",
+    "character":"Ancient Stampadian",
+    "characters":"Ancient Stampadians",
+    "fromCharacter":"Stampadian",
+    "fromCharacters":"Stampadians",
+    "thanks":"**Bianca**, **Preuk**, and all the Stampadians out there",
+    "setName":"Memory Dump",
+    "setNames":"Memory Dumps",
+    "arrange":"arrange",
+    "arranged":"arranged",
+    "mapSheet":"Map Sheet",
+    "characterSheet":"Character Sheet",
+    "shortTermArea":"Short Term Area",
+    "longTermArea":"Long Term Area",
+    "forgottenDeck":"Forgotten Deck",
+    "sightArea":"Sight Area",
+    "hippocampusArea":"Hippocampus Area"
+  }
+}
+{TEXT}
+{image logo}
+{centerOpen}
+Game version: {config-VERSION} - Manual version: {manualVersion}
+{centerClose}
+{boxOpenNotes}
+You can find an updated digital version of this manual and more information about {config-TITLE} at {config-LEARNURL}
+{boxCloseNotes}
+
+# In the darkest depths of {place}...
+
+The {place} kingdom's oldest stories tell of a powerful artifact, stolen from the dungeons again and again by valiant Heroes.
+
+Or at least, that's what we've managed to figure out. This time, we're as confused as you are.
+
+{image floppy}
+
+We found a large stock of boxes containing unlabeled floppy disks. Each contains a **single .Y file** that, in our opinion, stores a digital copy of an {character}'s memory fragments: scattered images and moments of their attempted escape from the bowels of the earth, experienced through their own eyes.
+
+Even these floppy disks seem imbued with {place}'s strange magic: the reader can relive them firsthand with a token, some dice, and a pencil. But, this time, maybe with something else...
+
+We apologize. Since these are memories and not written texts, we were unable to identify all the rules and the materials needed to play them and to create a reliable translator. We will provide you with the information exactly as we found it, and we'll share everything we've discovered so far.
+
+We will share one of these {setNames} daily at {config-HOMEPAGEURL}. Good luck!
+
+{boxOpen}
+From time to time, we will report in these boxes some of the notes we have collected during the preliminary studies of the disks data.
+{boxClose}
+
+# Setting up the Brain
+
+To play a **{setName}**, you need 5 6-sided dice, a small token, a pencil, and an eraser. You may need other supplies, but we can't say for sure. We suggest you keep your smartphone and scissors handy, just to be safe.
+
+{image setup1}
+
+Download the daily {setName} PDF, print it, and cut all of the cards on the first 2 pages - there usually are 18 of them.
+
+{boxOpen}
+If you prefer a more guided approach for your first adventure, we've prepared a **tutorial dungeon** for you to print, cut, and play. You can find it at **{config-TUTORIALDUNGEONURL}**. Start reading the **Welcome!** card and keep this manual aside. It will help you learn the basics of the game as you venture through your first maze!
+{boxClose}
+
+**Cut the cards outlines only**. Keep the {symbol symbolSetA} cards set face-up, and the others face-down in a pile {symbol 1} to form the **{forgottenDeck}**.
+Then, lay out the dark border cards (numbered from 10 and up) face-up in numerical order and in a grid on your right side {symbol 2} to form the **{longTermArea}**, and the remaining cards face-up in a line near the grid {symbol 3} to form the **{shortTermArea}**.
+Take the {symbol symbolCard1}{symbol symbolSetA} card from the line and **{arrange}** it in front of you {symbol 4}. Leave some empty spaces around this card, forming a Y {symbol 5}. This is the **{sightArea}**.
+Finally, leave one card space on the bottom left of the Y: this will host the **{hippocampusArea}** {symbol 6}.
+
+{image setup2}
+
+Cut the third page along the dashed line to create the **{mapSheet}** and the **{characterSheet}**. Place the {mapSheet} on your left side **pointing North**. Place the {characterSheet} right under the {sightArea} and tick 6 {symbol symbolHealth}, 1 {symbol symbolGold}, and 1 {symbol symbolStrength}.
+The {fromCharacter} brain is now initialized. We're ready to go!
+
+{boxOpen}
+The original files contained in the floppy disks **have the .Y extension**, and we are confident that **this suggests the {sightArea} and {hippocampusArea} layout**. That said, we're not sure about the layout of the other game elements. The one we've suggested is what we've found most effective during our experiments, but feel free to move the materials wherever you see fit.
+{boxClose}
+
+# The {sightArea}
+
+The {fromCharacter} dungeons are divided into a grid of **cells**, each one identified by a single letter name and surrounded by one or more walls.
+Every {character} will start in a dead end on **cell A** ({symbol symbolCellA}) and **facing North**. This dead end is already marked in the center of the map, with **an A letter surrounded by walls**.
+If you're sitting down **right in front of the {sightArea}**, you're already seeing **what the {character} sees right now**. Yes, you're going to explore the dungeon **from their very eyes**.
+
+{image sight1}
+
+The {symbol symbolCard1}{symbol symbolSetA} card in front of you is showing **your first corridor** {symbol 1}.
+**Tilting your head to the right**, you will see **an empty space** {symbol 2}: the {character} **have no meaningful memory of that place**, so we assume **it was a plain wall**. You can do the same, tilting your head left to see the wall on the other side.
+**Tilting your head down**, you will **look behind you** to see a third wall {symbol 3}.
+So, every time you start a new exploration, you will be **surrounded by walls** except for the North, in which there is **a corridor diving into the dark**...
+
+# Activating a card
+
+The top half of each card shows what you can see in a given direction. In the bottom center, there may be a round-shaped {symbol symbolActionTab} or a star-shaped {symbol symbolActionStar} tab that may contain an icon.
+
+{image cards1}
+
+You can activate any round-shaped or star-shaped tab card **with an icon in it** {symbol 1}. The icon represents **the type of action you are going to perform**: {symbol symbolMoveAction} Move action, {symbol symbolTalkAction} Talk action, {symbol symbolUseAction} Use action, etc. If you wish to perform it, follow the instructions on the bottom half of the card.
+Cards with a star-shaped tab {symbol 2} **automatically activate one by one in any order right after you've {arranged} them in the {sightArea}**.
+Cards with no space and an icon {symbol 3} don't provide any interaction, and they act like walls.
+
+Cards activate one after another, so you can't choose to activate a card if an activation is already in progress or a card is waiting to be activated. (For example, in the case of multiple star-shaped tab cards.)
+
+{boxOpen}
+While these are the 3 most common types, during our analysis, we encountered several other combinations of symbols and tabs on the cards.
+{boxClose}
+
+The {symbol symbolCard1}{symbol symbolSetA} card always shows a corridor with a {symbol symbolMoveAction} symbol: this means that you can perform a {symbol symbolMoveAction} **Move action** on that corridor **facing that direction**.
+
+# Conditions and Effects
+
+{image cards2}
+
+Although there are different types of cards, they are all activated the same way: **reading, evaluating, and executing each line**, starting from top to bottom {symbol 1}, and then the second column after the first {symbol 2}.
+
+Lines may include **one or more conditions** {symbol 3} and always include **one or more effects** {symbol 4}. There are 2 kinds of conditions: **mandatory conditions**, ending with a colon ":", that **always trigger the effect if the condition is fully verified**, and **optional conditions**, ending with a question mark "?", that trigger the effect when the condition is fully verified **and if you wish to perform that**. If no condition is described, the effect **is always triggered**.
+
+In the {symbol symbolCard1}{symbol symbolSetA} card (and in most of the {shortTermArea} cards), there is a list of lines with **mandatory conditions** that perform different **Move effects** depending on **the cell you are in**. Since you are in {symbol symbolCellA}, only the first line of the list is triggered.
+
+{boxOpen}
+Both conditions and effects are often expressed solely using symbols. We've encountered dozens of them, some intuitive and others almost indecipherable. Unfortunately, we don't have enough data to explain them all: the most important ones are summarized in the {characterSheet}. We believe it is quite clear that the {fromCharacter} loved playing dice...
+{boxClose}
+
+# Move Effects
+
+{boxOpen}
+"The hippocampus plays important roles in the consolidation of information from short-term memory to long-term memory, and in spatial memory that enables navigation." - Wikipedia.
+{boxClose}
+
+The most common action is the {symbol symbolMoveAction} Move action, which usually triggers a **Move effect** that lets you walk around the dungeon. As you move, your **current cell**, your **sight**, and your **orientation** may change. Movement effects are described by a **cell name**, like {symbol symbolCellX}, indicating which cell you will be in, followed by a sequence of 4 circles like {symbol symbolCard14}{symbol symbolCard2}{symbol symbolCardNone}{symbol symbolCard3} describing how to update the {sightArea}.
+
+{image move1}
+
+To perform a Move effect, move the card with the instructions into the {hippocampusArea} {symbol 1} (in your first Move action, it will be the {symbol symbolCard1}{symbol symbolSetA} card), moving the previous one back to the {longTermArea} or the {shortTermArea} if present. Place the small token on the **starting cell name** {symbol 2} and, from left to right, **{arrange}** the {sightArea} following the circles {symbol 3}: first the one in the left slot, the second one in the middle slot, the third one in the right slot, and the fourth one in the bottom slot. Cards with a number in a black circle and a dot {symbol symbolCard14} move back and forth **from the {longTermArea}**, cards with a number in a gray circle {symbol symbolCard2} move back and forth **from the {shortTermArea}**, and empty circles {symbol symbolCardNone} indicate an **empty space**. Cards may come from **any** area, including the {sightArea}, but **never from the {forgottenDeck}**.
+
+Update your map {symbol 4} and finally activate **all of the star-shaped tab cards** {symbol symbolActionStar} in the {sightArea} one by one in any order.
+
+{boxOpen}
+Getting lost was the {characters}' greatest fear, as evidenced by missing information about orientation in Move effects, but this made them real experts at creating maps. The entrance cell name, for example, is always an "A" - a letter that resembles an arrow pointing North.
+{boxClose}
+
+# Change Effects
+
+{characters} have memories of **the dungeon changing**, buried in **the {forgottenDeck}**. **Change effects** may bring them back, allowing you to explore even deeper.
+
+{image change1}
+
+Change effects {symbol symbolFullChange} are described by a first card and a set {symbol symbolCard14}{symbol symbolSetA}, an arrow pointing to the right {symbol symbolChangeWith}, and a second card with another set {symbol symbolCard14}{symbol symbolSetB}. To perform a Change effect, look for the first card **in any area** and, if you find it, swap it with the second card **in the {forgottenDeck}**. To be valid, the card must be straight, **with the card number in the top left and the card set in the top right**. The effect **is one-way only**, so if you can't find the first card because it has already been swapped, ignore the Change effect.
+
+{boxOpen}
+The {symbol symbolRotateAction} Rotate action triggers a special Change effect that **flips the card upside-down**, showing a different set. The card can only be flipped back **if the {symbol symbolRotateAction} Rotate action is present in the upper half of the new card**, as for any other card.
+{boxClose}
+
+# The Emergency Teleport
+
+We've added an emergency {symbol symbolTeleportAction} Teleport action to the memory exploration system: you can find it in the bottom left of your {characterSheet}.
+
+{image teleport1}
+
+Instead of performing an action, you can teleport back to the A cell, facing North.
+
+{boxOpen}
+The {characters} didn't have this help, finding themselves having to retrace their steps over and over again... **with all that entailed**. If you want a more authentic experience, just ignore this system.
+{boxClose}
+
+# Resources
+
+{boxOpen}
+The {character} culture is rich in extremely peculiar myths and traditions, where everything, from fruit to jewelry, is part of a complex ritual and could be worth as much as life itself.
+{boxClose}
+
+In the world of the {characters}, everything was a resource: from your health and strength to keys, jewelry, and fish. Your resources are tracked by your {characterSheet}. As you start the game, you already have 6 Health resources {symbol symbolHealth}, 1 Gold resource {symbol symbolGold}, and 1 Strength resource {symbol symbolStrength}. Via effects and conditions, you can add, lose, or manipulate resources at specific inventory boxes.
+
+{boxOpen}
+This chapter explains the resource management rules. They're simple to apply but difficult to explain. Feel free to skip it and to come back to it later: some players prefer to learn the rules by playing and from the Character Sheet, coming back to the rulebook later for clarifications, while others prefer to read the full explanation first.
+{boxClose}
+
+{image resources1}
+
+The **+X {symbol symbolResourceFish} effect** adds X resources of the {symbol symbolResourceFish} type to your inventory. The first time you add a resource, draw the resource symbol on the first box and tick as many numbered boxes as the resources you added **from left to right** {symbol 1}. You can have **no more than 6 resources of each type** (except for Gold, which has no limit). As you add more resources of the same type, keep ticking boxes **starting from the leftmost empty box** {symbol 2}. All resources beyond the 6th are lost. Although the sheet only shows a few pre-printed spaces, **you can bring unlimited resource types with you**.
+The **+X° {symbol symbolResourceFish} effect** will give you **a single resource** at the Xth box {symbol 3}. Adding a resource to an already ticked box has no effect. As you add more resources with the **+X {symbol symbolResourceFish} effect**, always **start ticking the leftmost empty boxes first** {symbol 4}.
+The **-X {symbol symbolResourceFish} effect** will remove X resources of {symbol symbolResourceFish} type from your inventory. Resources are removed, **clearing the rightmost ticked boxes first** {symbol 5}. If an effect tells you to lose more resources than you have, lose them all instead.
+
+{image resources2}
+
+The **-X° {symbol symbolResourceFish} effect** will remove **a single resource** at the Xth box {symbol 1}. Removing a resource on an empty box has no effect.
+The **{symbol symbolSetValue}X {symbol symbolResourceFish} effect** will **set the amount of resource you have** {symbol 2}, adding or removing them **following the +X {symbol symbolResourceFish} and -X {symbol symbolResourceFish} rules** (add by ticking the leftmost empty boxes, lose by clearing the rightmost ticked boxes).
+Resources often appear **in conditions** too {symbol 3}, to check if you have **a resource on a specific box**, **more or less than**, **at least one**, or **the exact amount** of a specific resource.
+
+{image resources3}
+
+**Resource effects may also appear as conditions**, both **testing a condition** and **changing your inventory** if that change **can be performed entirely**. For example, the **-3 {symbol symbolResourceFish} effect** will remove 3 {symbol symbolResourceFish} from your inventory. As an exception, it will remove all of your {symbol symbolResourceFish} if you have less than 3 of them.
+The **-3 {symbol symbolResourceFish}:... condition**, like **-3 {symbol symbolResourceFish}:+1 {symbol symbolHealth}**, will trigger if 3 {symbol symbolResourceFish} resources can be removed from your inventory **entirely**. So it won't be verified if you have 2 {symbol symbolResourceFish} or fewer and nothing will happen to your inventory {symbol 1}. If you have 3 {symbol symbolResourceFish} resources or more, the condition will remove 3 of them to be verified, and it will trigger its effect - in the example, it will give you 1 {symbol symbolHealth}. {symbol 2}
+**Any resource effect may appear as a condition**, so a **+3°{symbol symbolResourceFish} condition** will trigger if your 3rd {symbol symbolResourceFish} can be ticked, a **+3 {symbol symbolResourceFish} condition** will trigger if you can add 3 {symbol symbolResourceFish} resources without losing any of them, and so on.
+
+# Offerings, Power, and Order
+
+The **{symbol symbolOffer} Offer effect and condition** allow you to decide to remove any amount of a requested resource between A and B. The amount spent usually affects **an {symbol symbolEffect} Action Power**, which is calculated following a sequence of operations **in a specific order**.
+
+{image offer1}
+
+In these examples, both {symbol 1} and {symbol 2} are asking to calculate the {symbol symbolEffect} Action Power by rolling a die and offering some resources, but **the different steps order greatly impact how to do that**.
+In {symbol 1}, you have to place your offering **before seeing the die result**, and in {symbol 2} you have to place your offering **after seeing the die result**. As the {symbol symbolEffect} Action Power is usually used by following conditions, and usually the higher the better, offering first {symbol 1} is more risky than offering later {symbol 2}.
+
+{boxOpen}
+Strictly following the order of operations applies both to calculating the Action Power and to the many other {fromCharacter} rituals recounted in the memories...
+{boxClose}
+
+# Golden Rules
+
+**Cards have no memory** so, every time you activate a new card, consider no dice rolled or in game, zero resources {symbol symbolOffer} Offered, and zero {symbol symbolEffect} Action Power.
+
+# Winning and Losing
+
+{image end1}
+
+A {setName} is considered **explored successfully** if you manage to perform a {symbol symbolMoveAction} Move action on the card with a crown. If you have to lose 1 or more {symbol symbolHealth} Health resources, but you have none, the {setName} exploration **ends with a failure**.
+
+{boxOpen}
+Often, the crowned card features an illustration of some sort of exit - from which we assumed that was the purpose of the {characters}. A mathematical formula is also printed to calculate some sort of score. Since these are dumps of past events, we don't know exactly what this score is for. For now, you can use it to compare the results of your exploration with your friends.
+{boxClose}
+
+# Saving and Loading
+
+If no cards are activating or are about to activate, you can **save the current game** to resume later.
+
+{image saveload1}
+
+To **save your game**, write your current cell name and the card number {arranged} in the {sightArea} on the top right of the {mapSheet} as it is oriented, following the Move effect format. Form a face-up deck with all of the face-up cards on the table ({sightArea}, {longTermArea}, {shortTermArea}, and {hippocampusArea}) and put it on the face-down {forgottenDeck}. Store this deck, the {mapSheet}, and the {characterSheet} together.
+To **load your game**, collect all the materials and split the deck into two. The smallest deck is the {forgottenDeck} and must be kept aside face-down. Form the {longTermArea} and {shortTermArea} with the remaining cards. Rotate the map to the saved game side and {arrange} the {sightArea} according to the instructions you wrote in the top right, leaving the {hippocampusArea} empty. Finally, put the {characterSheet} under the {sightArea} and erase the instructions.
+
+{boxOpen}
+There is no need to save and restore the {hippocampusArea} zone: its purpose is to help you prepare the {sightArea} as you move from zone to zone.
+{boxClose}
+
+# Extra Game Modes
+
+**Want to see who the fastest explorer is?** Start a timer at the beginning of the game and successfully explore a {setName} the fastest you can!
+
+**Do you prefer a more relaxed exploration?** When you have to lose more {symbol symbolHealth} Health than you have, lose {symbol symbolStrength} Strength by the remaining amount instead. If you run out of Strength too, gain {symbol symbolCurse} by the remaining amount instead.
+
+# That's All...
+
+{image epilogue1}
+
+This is the information we've gleaned from analyzing the floppy disks so far: it should be enough to begin exploring your first memory dumps. But there's much more to discover: there are symbols to interpret, procedures and rituals to reconstruct, people to identify, and monsters to fight. Don't be afraid to get creative. Don't even be afraid to cheat a little when things get complicated, especially in your first few games. And don't give up, because we need you. Help us discover the purpose of these memory dumps.
+
+{boxOpenNotes}
+{config-SHORTTITLE} is an open-source project: {config-SOURCESURL}. Very special thanks to {thanks:format}.
+{boxCloseNotes}
+{pageBreakStart}Our Translations{pageBreakEnd}
+
+{boxOpen}
+Understanding the meaning behind some of the cards can be a daunting challenge. That's why we've decided to share our interpretation of some of the cards we found during our analysis. **If you'd rather test yourself and do it on your own, don't read on!**
+{boxClose}
+
+# Card 1
+
+{image translation-monster}
+
+As this card has a star-shaped {symbol symbolActionStar} tab, it activates as it is {arranged} into the {sightArea}. There is no symbol in the center, so it can't be activated in any other way.
+
+{symbol 1} First, roll one die. Then, decide to offer from 0 to 5 Strength resources. Sum these values to get the Action Power.
+{symbol 2} If you can lose one Curse resource, do it and reduce the Action Power by one. As the condition ends with a colon, you **must do it** if possible.
+{symbol 3} If the resulting Action Power is greater than 3, gain 1 Gold resource.
+{symbol 4} If the resulting Action Power is less than 3, gain 1 Strength resource.
+{symbol 5} If you are in Cell E and the Action power is less than 4, lose 1 Health resource. Conditions can trigger another condition instead of an action!
+{symbol 6} If you are in Cell S instead and the Action power is less than 4, gain 1 Curse resource.
+
+{boxOpen}
+We think that these rules schematize some kind of combat, where the fighter can react by applying more or less force to the blow.
+{boxClose}
+
+# Card 2
+
+{image translation-dice}
+
+As this card has a round-shaped {symbol symbolActionTab} tab with a balloon icon on it, you can activate the card by performing a Talk action.
+
+{symbol 1} Roll 5 dice. Then, for 3 times, you can select from 0 to 5 of them and reroll.
+{symbol 2} If the sum of a dice set composed of a 4, a 5, a 6, and all other dice is greater than 21, gain 1 Screw resource.
+{symbol 3} If the sum of a dice set composed of a 4, a 5, a 6, and all other dice is greater than 23, gain 1 Screw resource. That means that, with a 24, you get 2 Screws: this one and the one from the previous line.
+{symbol 4} If the sum of a dice set composed of a 4, a 5, a 6, and all other dice is greater than 24, gain 2 Screws resource. With a 25, you get 4 Screws in total!
+{symbol 5} If you can lose 3 Screws and **you want to do that** (due to the question mark after the condition), you get 1 Strength resource.
+{symbol 6} If you can lose 5 Screws and **you want to do that**, swap the 14A card in any area with the 14B card in the {forgottenDeck}.
+
+{boxOpen}
+This card appears to illustrate the rules of a dice game very similar to one known in our world as "Ship, Captain, and Crew." During our tests, several such games appeared, activated by "talking" to hooded figures, who exchanged their prizes for useful items or even opening locked passages. From this, we imagined that the {fromCharacters} were particularly fond of dice games.
+{boxClose}
+
+# Card 3
+
+{image translation-mystery}
+
+As this card has a round-shaped {symbol symbolActionTab} tab with a hand icon on it, you can activate the card by performing a Use action.
+
+{symbol 1} There may be garbage text, symbols, math formulas with variables, etc. We've blanked it as we didn't understand any of them.
+{symbol 2} If "4" and you want to do it, then gain 1 Apple resource. We don't know what "4" means.
+{symbol 3} If "3" and you want to do it, then gain 1 Snail resource. We don't know what "3" means.
+{symbol 4} If "2" and you want to do it, then gain 1 Envelope resource. We don't know what "2" means.
+{symbol 5} If you have at least 1 Apple, 1 Snail, or 1 Envelope, swap the 17A card in any area with the 17B card in the {forgottenDeck}.
+
+{boxOpen}
+We have no idea what this card means. We know that you need to get at least one resource to swap one of the cards.
+{boxClose}

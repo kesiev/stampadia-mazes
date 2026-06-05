@@ -1,0 +1,114 @@
+BODY {
+	background-color:#000;
+    font-size: 16px;
+    line-height: 20px;
+    padding: 0;
+    margin: 0;
+    color: #ccc;
+	font-family: Seshat;    
+}
+
+A {
+    color:#fff;
+}
+
+A, .accent {
+    font-weight: bold;
+}
+
+#body {
+	text-align:center;
+	margin:20px 0;
+}
+
+.logo {
+	width:400px;
+	height:200px;
+	display: inline-block;
+	background-image: url(../images/logo-reverse.png);
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.divider {
+	padding:0;
+	margin:40px 0;
+	height:20px;
+	background-image: url(../images/divider.png);
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.block {	
+	margin: auto;
+	width:40%;
+}
+
+.block .image {
+	margin-bottom:20px;
+}
+
+.block .preview {
+	display: inline-block;
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.block .preview.manual {
+	height:150px;
+	width:141px;
+	background-image: url(../images/manual.png);
+}
+
+#faqsbox {
+	background-color: #fff;
+	color:#000;
+	text-align: left;
+	border:1px solid #ccc;
+	width:60%;
+	margin: auto;
+	padding: 20px;
+}
+
+#faqsbox .q {
+	font-weight: bold;
+	margin:10px 0;
+}
+
+#faqsbox .a A {
+	color:#000;
+}
+
+#credits {
+	font-size:15px;
+}
+
+@media (max-width: 600px) {
+	.logo {
+		width: 70vw;
+		height: 20vw;
+	}
+
+	.block {
+		width: 90%;
+	}
+
+	#learnHowToPlayTheGame {
+		padding:0 10px;
+	}
+
+	H1, H2 {
+		font-size: 20px;
+	}
+
+	#faqsbox {
+		width: 80%;
+	}
+
+	#credits {
+		padding:0 10px;
+	}
+}

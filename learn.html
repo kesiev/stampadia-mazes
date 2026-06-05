@@ -1,0 +1,43 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Mazes Of Stampadia 3D</title>
+    <link rel="stylesheet" href="style/learn-stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="style/Seshat/stylesheet.css">
+    <script src="js/website.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/languages.js"></script>
+</head><body onload="onl()">
+    <div id="body">
+        <a href="index.html" class="logo"></a>
+        <p class="translatable" id="learnHowToPlayTheGame"></p>
+        <div class="divider"></div>
+        <h1><span class="translatable" id="theGameManual"></span></h1>
+        <div class="block">
+			<div class="image"><a class="manualLink" href="#"><div class="preview manual"></div></a></div>
+			<div class="description">
+				<p class="translatable" id="readTheManual"></p>
+			</div>
+		</div>
+        <h1><span class="translatable" id="theTutorialDeck"></span></h1>
+        <div class="block">
+			<div class="description">
+				<p class="translatable" id="tutorialDeck"></p>
+			</div>
+		</div>
+        <div class="divider"></div>
+        <h1><span class="translatable" id="faqs"></span></h1>
+        <div id="faqsbox"></div>
+        <div class="divider"></div>
+        <div id="credits"></div>
+    </div>
+</body></html>
+<script>
+function onl() {
+	let
+		website = new Website();
+
+	website.learn();
+}
+</script>

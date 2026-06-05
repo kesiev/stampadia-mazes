@@ -1,0 +1,2191 @@
+<html><head>
+	<meta charset="UTF-8">
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<link rel="stylesheet" type="text/css" href="../../style/Seshat/stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="../../style/Ferrum/stylesheet.css">
+
+	<script src="../../js/extras/qrcode.min.js"></script>
+	<script src="../../js/jspdf.umd.min.js"></script>
+    <script src="../../js/svg2pdf.umd.min.js"></script>
+    <script src="../../js/fonts/Seshat-normal.js"></script>
+    <script src="../../js/fonts/Ferrum-normal.js"></script>
+
+	<script src="../../js/resources.js"></script>
+	<script src="../../js/languages.js"></script>
+	<script src="../../js/random.js"></script>
+	<script src="../../js/cardprinter.js"></script>
+	<script src="../../js/svg.js"></script>
+	<script src="../../js/debugtools.js"></script>
+	<script src="../../js/printers/dungeon.js"></script>
+
+	<script src="../../js/helpers.js"></script>
+	<script src="../../js/data.js"></script>
+	<script src="../../js/dungeon.js"></script>
+	<script src="../../js/crawler.js"></script>
+	<script src="../../js/deck.js"></script>
+	<script src="../../js/generator.js"></script>
+	<script src="../../js/tutorial.js"></script>
+
+</head><body onload="onl()">
+	<div style="position: absolute;left: -1000px;">
+        <div style="font-family: Seshat;">Font loaded</div>
+        <div style="font-family: Garamond; font-weight: bold;">Font loaded</div>
+        <div style="font-family: Ferrum;">Font loaded</div>
+    </div>
+	<input id="explorer" style="background-color:#0f0;color:#000" type="button" onclick="explorer()" value="Explorer">
+	<input id="devmode" style="background-color:#f00;color:#fff" type="button" onclick="devMode()" value="Devmode">
+	<input id="tutorial" style="background-color:#00f;color:#fff" type="button" onclick="tutorial()" value="Tutorial"> |
+	<input id="calendar" type="button" onclick="calendar()" value="Calendar"> |
+	<input id="validateevents" type="button" onclick="validateEvents()" value="Validate events"> |
+	<input id="validatespecials" type="button" onclick="validateSpecials()" value="Validate specials"> |
+	<input id="swappinesstest" type="button" onclick="swappinessTest()" value="Swappiness test"> |
+	<input id="cardsloadtest" type="button" onclick="cardsLoadTest()" value="Cards load test"> |
+	<input id="squeezetest" type="button" onclick="squeezeTest()" value="Squeeze test"> |
+	<input id="drawingtest" type="button" onclick="drawingtest()" value="Drawing test"> |
+	<input id="glyphtest" type="button" onclick="glyphTest()" value="Glyph test"> |
+	<input id="passagetest" type="button" onclick="cardsTest(0)" value="Passage test"> |
+	<input id="specialstest" type="button" onclick="cardsTest(1)" value="Specials test"> |
+	<hr>
+	<input id="runstats" type="button" onclick="runStats()" value="Run in-depth tests+stats"> | <input id="testprinting" type="checkbox"> Test printing (slower) | <input id="testtoday" type="checkbox"> Start from last week seed	
+	<hr>
+	<span id="out">
+</body></html>
+<script>
+
+let
+	LOCALSTORAGE_ID = "_mod3ddbg",
+	LOADED_RESOURCES,
+	COMPASS = "NESW",
+	CAMERAS = [
+		[
+			{ direction:3, x:-1, y:0 }, { direction:0, x:0, y:-1 }, { direction:1, x:1, y:0 }, { direction:2, x:0, y:1 }
+		],[
+			{ direction:0, x:0, y:-1 }, { direction:1, x:1, y:0 }, { direction:2, x:0, y:1 }, { direction:3, x:-1, y:0 }
+		],[
+			{ direction:1, x:1, y:0 }, { direction:2, x:0, y:1 }, { direction:3, x:-1, y:0 }, { direction:0, x:0, y:-1 }
+		],[
+			{ direction:2, x:0, y:1 }, { direction:3, x:-1, y:0 }, { direction:0, x:0, y:-1 }, { direction:1, x:1, y:0 }
+		]
+	],
+	FAKEPROGRESS = {plays:0,e:[],"completion":0,"lastSeed":-1 },
+	FILTERED_TYPES = [ "biomeWall", "biomeCorridor" ],
+	INTERACTION_MAP = {
+		"imageElementNpc": { actions:[ "talk", "see" ] },
+		"imageElementNpcs": { actions:[ "move" ] },
+		"imageElementTrap": { actions:[ "move"] },
+		"imageElementLever":{ actions:[ "interact" ] },
+		"imageElementChest":{ actions:[ "interact" ] },
+		"imageElementRubble":{ actions:[ "interact" ] },
+		"imageElementFairy":{ actions:[ "interact", "see" ] },
+		"imageElementStoneWall":{ actions:[ "interact", "teleport" ] },
+		"imageElementPedestal":{ actions:[ "interact" ] },
+		"imageElementStone":{ actions:[ "look" ] },
+		"imageElementBoss":{ actions:[ "interact" ] },
+		"imageElementCompass":{ actions:[ "interact" ] },
+		"imageElementPoison":{ actions:[ "see" ] },
+		"imageElementTeleport":{ actions:[ "teleport" ] },
+		"imageElementBarrier":{ actions:[ "move" ] },
+		"imageElementGhost":{ actions:[ "see" ] },
+		"imageElementBars":{ actions:[] },
+		"imageElementArcade":{ actions:[ "interact" ] },
+		"imageElementCube": { actions:[ "talk", "interact" ] },
+		"imageElementSideNpc":{ actions:[ "move" ] },
+		"imageElementSnakeBody":{ actions:[ "interact" ] },
+		"imageElementSnakeHead":{ actions:[ "interact" ] },
+		"imageElementScroll":{ actions:[ "interact", "look" ] },
+		"imageElementBossTwoHeads":{ actions:[ "interact" ] },
+		"imageElementBug":{ actions:[ "none" ] },
+		"imageElementCrates":{ actions:[ "interact" ] },
+		"imageElementBoar":{ actions:[ "interact" ] },
+		"imageElementMirror":{ actions:[ "look" ] },
+		"imageElementSnakeWallTrap":{ actions:[ "see" ] },
+		"imageElementSlot":{ actions:[ "interact" ] },
+		"imageElementComputer":{ actions:[ "interact" ] },
+		"imageElementEyeball":{ actions:[ "see" ] },
+		"imageElementInvisible":{ actions:[ "move", "see" ] },
+		"imageElementZombie":{ actions:[ "see" ] },
+		"imageElementArmor":{ actions:[ "interact" ] },
+		"imageElementFireElement":{ actions:[ "interact" ] },
+		"imageElementBlob":{ actions:[ "interact" ] },
+		"imageElementWaterfall":{ actions:[ "interact" ] },
+		"imageElementStatueGod1":{ actions:[ "interact" ] },
+		"imageElementStatueGod2":{ actions:[ "interact" ] },
+		"imageElementStatueGod3":{ actions:[ "interact" ] },
+		"imageElementStatueGod4":{ actions:[ "interact" ] },
+		"imageElementQuestionMark":{ actions:[ "interact" ] },
+		"imageElementNpcBoss": { actions:[ "talk" ] },
+		"imageElementNpcsGroup": { actions:[ "talk" ] },
+		"imageElementCrystals":{ actions:[ "interact" ] },
+		"imageElementNpcStrong": { actions:[ "talk" ] },
+	},
+	COLUMNS = [
+		// https://gist.github.com/steveseguin/79ec9f9e266ad0d90cbaacde61579177
+		{ id:"keepOriginalGate", description:"The rules for leaving the area are on the original gate card", symbol:"&#128682;" },
+		{ id:"isTeleport", description:"This event uses teleports", symbol:"&#10024;" },
+		{ id:"isTeleportToGhost", description:"This event teleports to a ghost", symbol:"&#128123;" },
+		{ id:"isScatter", description:"This event scatter stuff around the dungeon instead of in a single area", symbol:"&#128256;" },
+		{ id:"isCode", description:"This event uses specific code to create a card", symbol:"&#128187;" },
+		{ id:"isDiceGame", description:"This event uses a dice game", symbol:"&#127922;" },
+		{ id:"isSchemaGame", description:"This event uses a specific schema for rules", symbol:"&#128377;" },
+		{ id:"isSwitchType", description:"This event uses a card flipped upside-down", symbol:"&#128579;" },
+		{ id:"isTeleportToSubplace", description:"This event uses a single room with no exits", symbol:"&#128230;" },
+		{ id:"isLockingExit", description:"This event locks the exit", symbol:"&#128721;" },
+		{ id:"resourcesCount", description:"This event uses collectible resources", symbol:"&#x1F6CD;&#xFE0F;" },
+		{ id:"keysCount", description:"This event uses collectible keys", symbol:"&#128273;" },
+		{ id:"isInstant", description:"This event uses instant events", symbol:"&#128165;" },
+		{ id:"isFight", description:"This event uses instant events that can be retriggered, like a battle", symbol:"&#128074;" },
+		{ id:"isLockOnly", description:"This event uses just a lock", symbol:"&#128272;" },
+		{ id:"isSkull", description:"This event uses the curse resource", symbol:"&#128128;" },
+		{ id:"isLife", description:"This event uses the life resource", symbol:"&#10084;" },
+		{ id:"isAttack", description:"This event uses the attack resource", symbol:"&#x2694;&#xFE0F;" },
+		{ id:"isGold", description:"This event uses the gold resource", symbol:"&#128176;" },
+		{ id:"isSpecialCards", description:"This event also adds special cards", symbol:"&#128220;" },
+		{ id:"isDeadly", description:"This event may instantly kill the player!", symbol:"&#x26B0;&#xFE0F;" },
+		{ id:"isCutout", description:"This event contains components to cut out", symbol:"&#9986;" },
+		{ id:"isDraw", description:"This event requires to draw something", symbol:"&#127912;" },
+		{ id:"maxAtArea", description:"This event spans on multiple areas", symbol:"&#x1F5FA;&#xFE0F;" },
+		{ id:"isReplaceToSubplace", description:"This event changes card mid-execution", symbol:"&#128177;" },
+		{ id:"isPersistentMemory", description:"This event saves progress on user device", symbol:"&#128190;" },
+	],
+	EVENTS_TARGET = 100,
+	EVENTS_GOALS = [
+		{ id:"keepOriginalGate", goal:0.25 },
+		{ id:"isScatter", goal:0.15 },
+		{ id:"isCode", goal:0.25 },
+		{ id:"isDiceGame", goal:0.15 },
+		{ id:"isSchemaGame", goal:0.10 },
+		{ id:"isSwitchType", goal: 0.25 },
+		{ id:"isSkull", goal: 0.5 },
+		{ id:"isLife", goal: 0.5 },
+		{ id:"isAttack", goal:0.5 },
+		{ id:"isGold", goal:0.5 },
+		{ id:"isSpecialCards", goal:0.25 },
+		{ id:"isLockingExit", goal:0.125 },
+		{ id:"isDeadly", goal:0.125 },
+	],
+	SPECIALS_TARGET = 50,
+	SPECIALS_GOALS = [
+		{ id:"isCode", goal:0.25 },
+		{ id:"isSkull", goal: 0.5 },
+		{ id:"isLife", goal: 0.5 },
+		{ id:"isAttack", goal:0.5 },
+		{ id:"isGold", goal:0.5 },
+	],
+	SWAPPINESS_TESTS = [
+		{
+			description:"noWallCards",
+			noWallCards:true
+		},{
+			description:"noWallCards + optimizeWallPosition",
+			noWallCards:true,
+			optimizeWallPosition:true,
+		},{
+			description:"noWallCards + avoidFromCardInDirections",
+			noWallCards:true,
+			avoidFromCardInDirections:true,
+		},{
+			description:"noWallCards + suggestFromCardInDirections",
+			noWallCards:true,
+			suggestFromCardInDirections:true,
+		},{
+			description:"noWallCards + avoidFromCardInDirections + optimizeWallPosition",
+			noWallCards:true,
+			optimizeWallPosition:true,
+			avoidFromCardInDirections:true,
+		},{
+			description:"noWallCards + suggestFromCardInDirections + optimizeWallPosition",
+			noWallCards:true,
+			optimizeWallPosition:true,
+			suggestFromCardInDirections:true,
+		}
+	];
+	
+function filter(list, filter) {
+	return list.filter(element=>filter.indexOf(element) == -1)
+}
+
+function logError(errors, prefix, line) {
+	errors.push("["+prefix+"]: "+line);
+}
+
+function testString(errors, prefix, text, flags, localflags, cardflags, extras) {
+	const
+		NOTCOMPLEXSYMBOLS = [
+			"times",
+			"endLoop",
+			"startLoop",
+			"textSeparator",
+		];
+
+	let
+		symbols = 0;
+		
+	text.replace(/\{symbol ([^} ]+)/g,(m,m1)=>{
+		if (NOTCOMPLEXSYMBOLS.indexOf(m1) == -1)
+			symbols++;
+	})
+
+	text.replace(/\{qrcode /g,()=>{
+		symbols++;
+	})
+
+	text.replace(/\{stamp /g,()=>{
+		symbols++;
+	})
+
+	text.replace(/\[\[[a-zA-Z]+:/g,()=>{
+		symbols++;
+	})
+
+	if (cardflags)
+		cardflags.symbols+=symbols;
+
+	if (text.indexOf("{symbol symbolRollDie}{symbol symbolRollDie}")!=-1) {
+		localflags.isDiceGame = flags.isDiceGame = true;
+	}
+
+	if (text.indexOf("{symbol schema")!=-1) {
+		localflags.isSchemaGame = flags.isSchemaGame = true;
+	}
+
+	if (text.indexOf("symbolResourceSkull")!=-1) {
+		localflags.isSkull = flags.isSkull = true;
+	}
+
+	if (text.indexOf("symbolResourceLife")!=-1) {
+		localflags.isLife = flags.isLife = true;
+	}
+
+	if (text.indexOf("symbolResourceAttack")!=-1) {
+		localflags.isAttack = flags.isAttack = true;
+	}
+
+	if (text.indexOf("symbolResourceGold")!=-1) {
+		localflags.isGold = flags.isGold = true;
+	}
+
+	if (text.indexOf("persistentMemory")!=-1) {
+		localflags.isPersistentMemory = flags.isPersistentMemory = true;
+	}
+}
+
+function testFunction(errors, prefix, fn, flags, localflags, cardflags, extras) {
+	let
+		fnToString = fn.toString();
+	testString(errors, prefix, fnToString, flags, localflags, cardflags, extras);
+	if (fnToString.indexOf("cutout:")!=-1)
+		localflags.isCutout = flags.isCutout = true;
+}
+
+function testText(errors, prefix, text, flags, localflags, cardflags, extras) {
+	let
+		cleanText;
+
+	testString(errors, prefix, text, flags, localflags, cardflags, extras);
+
+	cleanText = text.replace(/\[\[([^\]]+)\]\]/g,(m,m1)=>{
+		let
+			parts = m1.split(":");
+		switch (parts[0]) {
+			case "resource":{
+				if (!flags.resources[parts[1]])
+					logError(errors, prefix, "Requested missing resource "+parts[1]);
+				return "";
+			}
+			case "key":{
+				if (!flags.keys[parts[1]])
+					logError(errors, prefix, "Requested missing key "+parts[1]);
+				return "";
+			}
+			case "index":{
+				return "";
+			}
+			case "endGameBonuses":{
+				return "";
+			}
+			default:{
+				debugger;
+			}
+		}
+	});
+
+	if (extras)
+		cleanText = cleanText.replace(extras,"");
+
+	cleanText = cleanText.replace(/\{[^}]+\}/g,"");
+	cleanText = cleanText.replace(/[ !"'+-0123456789~=]/g,"");
+	
+	if (cleanText.length != 0)
+		logError(errors, prefix, "Invalid character in: "+text+" ("+cleanText+")");
+}
+
+function validateEvent(errors, prefix, event, flags, isgatemerged) {
+	let
+		allTypes = [],
+		anyPlaceRows = 0,
+		fakePlaceRows = 0,
+		allRows = 0,
+		meaningfulTypes,
+		meaningfulType,
+		interactionMap,
+		localflags = {};
+
+	if (!event.id)
+		logError(errors, prefix, "Missing id");
+
+	if (event.requireResources)
+		if (event.requireResources.length)
+			event.requireResources.forEach(resource=>{
+				if (!flags.resources[resource]) {
+					flags.resourcesCount++;
+					flags.resources[resource] = true;
+				} else
+					logError(errors, prefix, "Double resource requested "+resource);	
+			})
+		else
+			logError(errors, prefix, "Empty requireResources found. Remove the key instead.");
+
+	if (event.requireKeys)
+		if (event.requireKeys.length)
+			event.requireKeys.forEach(key=>{
+				if (!flags.keys[key]) {
+					flags.keysCount++;
+					flags.keys[key] = true;
+				} else
+					logError(errors, prefix, "Double key requested "+key);	
+			})
+		else
+			logError(errors, prefix, "Empty requireKeys found. Remove the key instead.");
+
+
+	if (event.switchType) {
+		flags.isSwitchType = true;
+		flags.isInteraction = true;
+		if (event.type)
+			logError(errors, prefix, "Can't use both type and switchType");
+		if (!event.boxes || !event.boxes[0] || (
+			(!event.boxes[0].rotate || (event.boxes[0].rotate.length!=0)) &&
+			(!event.boxes[0].flip || (event.boxes[0].flip.length!=0))
+		))
+			logError(errors, prefix, "switchType elements must have a boxes:[{ rotate:[] }] or boxes:[{ flip:[] }]");
+		if (event.switchType.length) {
+			event.switchType.forEach((set,setid)=>{
+				if (set.length == 2) {
+
+				} else
+					logError(errors, prefix+"set("+setid+")", "Set should have exactly 2 elements, one for card side");
+			})
+		} else
+			logError(errors, prefix, "Empty switchType found. Remove the key instead.");
+	} else if (event.type) {
+
+		event.type.forEach(list=>{
+			list.forEach(element=>{
+				allTypes.push(element);
+			})
+		})
+		meaningfulTypes = filter(allTypes, FILTERED_TYPES);
+		if (meaningfulTypes.length == 1) {
+			meaningfulType = meaningfulTypes[0];
+			if (INTERACTION_MAP[meaningfulType]) {
+				interactionMap = INTERACTION_MAP[meaningfulType];
+			} else
+				logError(errors, prefix, "Can't find interaction map for "+meaningfulType);
+		} else if (meaningfulTypes.length > 1) {
+			meaningfulTypes = [ meaningfulTypes.pop() ];
+		}
+
+	} else
+		logError(errors, prefix, "Missing type");
+
+	if (event.addInteractionConditions)
+		flags.checkInteraction = true;
+
+	if (event.keepOriginalGate)
+		flags.keepOriginalGate = true;
+
+	if (event.setInteraction)
+		flags.isInteraction = true;
+
+	if (event.code) {
+		let
+			cardflags = { symbols: 0 };
+		flags.isCode = true;
+		testFunction(errors, prefix+"code()", event.code, flags, localflags, cardflags);
+		flags.symbols = Math.max(flags.symbols || 0, cardflags.symbols);
+	}
+
+	if (event.newInteraction) {
+		flags.newInteraction = true;
+		flags.isInteraction = true;
+	}
+
+	if (event.isInstant) {
+		flags.isInstant = true;
+	}
+
+	if (event.boxes) {
+
+		if (event.boxes.length) {
+			event.boxes.forEach(box=>{
+				let
+					cardflags = { symbols:0 },
+					count = 0;
+				for (action in box)
+					count++;
+				if (count == 1) {
+					if (interactionMap) {
+						if (interactionMap.actions.indexOf(action) == -1)
+							logError(errors, prefix, "Invalid "+action+" action for type "+meaningfulType);
+					}
+					if (event.isInstant && (action != "see"))
+						flags.isFight = true;
+					box[action].forEach((row,rowid)=>{
+						let
+							localprefix = prefix+"box("+action+")row("+rowid+")";
+
+						if (row.teleportToRandomPlace && !row.atFakePlace)
+							flags.isTeleport = true;
+						if (row.teleportToGhost && !row.atFakePlace)
+							flags.isTeleportToGhost = true;
+						if ((row.interactionId !== undefined) || row.teleportToSubplace)
+							flags.isInteraction = true;
+						if (row.ifInteractions !== undefined)
+							flags.checkInteraction = true;
+						if ((row.ifInteractions !== undefined) && (row.order && (row.order<0)))
+							flags.isInteractionNotBlocking = true;
+						if (row.atAnyPlace)
+							anyPlaceRows++;
+						if (row.keepOriginalGate)
+							flags.keepOriginalGate = true;
+						if (row.atFakePlace)
+							fakePlaceRows++;
+						if (row.atAnyPlace && row.atFakePlace)
+							logError(errors, localprefix, "atAnyPlace or atFakePlace allowed on the same line");
+						if (row.teleportToSubplace) {
+							flags.isTeleportToSubplace = true;
+							if (!event.subplaces)
+								logError(errors, localprefix, "Teleporting to a subplace but no subplaces specified");
+							else if (!event.subplaces[row.teleportToSubplace])
+								logError(errors, localprefix, "Teleporting to a missing subplace: "+row.teleportToSubplace);
+						}
+						if (row.replaceWithSubplace) {
+							flags.isReplaceToSubplace = true;
+							if (!event.subplaces)
+								logError(errors, localprefix, "Replacing to a subplace but no subplaces specified");
+							else if (!event.subplaces[row.replaceWithSubplace])
+								logError(errors, localprefix, "Replacing to a missing subplace: "+row.replaceWithSubplace);
+
+						}
+						if (row.lockExitWithSubplace) {
+							flags.isLockingExit = true;
+							if (!event.subplaces)
+								logError(errors, localprefix, "Locking the exit but no doors specified");
+							else if (!event.subplaces[row.lockExitWithSubplace])
+								logError(errors, localprefix, "Locking the exit with a missing subplace: "+row.lockExitWithSubplace);
+						}
+
+						if (row.line)
+							testText(errors, localprefix+"line()", row.line, flags, localflags, cardflags, /\?./g);
+						if (row.cutout)
+							flags.isCutout = true;
+						if (row.condition)
+							testText(errors, localprefix+"condition()", row.condition, flags, localflags, cardflags, /[<>:?]/g);
+
+						allRows++;
+					})
+				} else
+					logError(errors, prefix, "Invalid box count ("+count+")");
+				
+				flags.symbols = Math.max(flags.symbols || 0, cardflags.symbols);
+				localflags.symbols = Math.max(localflags.localflags || 0, cardflags.symbols);
+			})
+		} else
+			logError(errors, prefix, "Empty boxes found. Remove the key instead.");
+	}
+
+	if (isgatemerged) {
+		if (anyPlaceRows != allRows)
+			logError(errors, prefix, "mergeGateWith event box entries should all have atAnyPlace.");
+		if (event.atAnyPlace)
+			logError(errors, prefix, "mergeGateWith events should not have atAnyPlace set.");
+	} else if (anyPlaceRows)
+		if (event.keepOriginalGate) {
+			if (anyPlaceRows != allRows)
+				logError(errors, prefix, "keepOriginalGate event box entries should all have atAnyPlace.");
+			if (event.atAnyPlace)
+				logError(errors, prefix, "keepOriginalGate events should not have atAnyPlace set.");
+		} else if (anyPlaceRows == allRows)
+			logError(errors, prefix, "All boxes are atAnyPlace. Set atAnyPlace on event and remove from boxes.");
+
+	if (fakePlaceRows && event.atAnyPlace)
+		logError(errors, prefix, "Requested a fake place on an event set for any place.");
+
+	if (event.mergeGateWith)
+		validateEvent(errors, prefix+"mergeGateWith()", event.mergeGateWith, flags, true);
+
+	if (event.sortByPlace) {
+		if (event.atAnyPlace)
+			logError(errors, prefix, "sortByPlace not needed on atAnyPlace cards.");
+		if (anyPlaceRows == allRows)
+			logError(errors, prefix, "sortByPlace not needed as no rows contain a place.");
+	}
+
+	if (localflags.isSchemaGame) {
+		if (meaningfulType != "imageElementArcade") {
+			logError(errors, prefix, "Cards with schema explaining the game must be imageElementArcade type");
+		}
+	}
+
+	if (meaningfulType == "imageElementMirror") {
+		flags.isDraw = true;
+	}
+
+	if (meaningfulType == "imageElementArcade") {
+		if (!localflags.isSchemaGame) {
+			logError(errors, prefix, "imageElementArcade cards must show a schema explaining the rules");
+		}
+	}
+
+	if (event.subplaces)
+		for (let k in event.subplaces)
+			if (event.subplaces[k].length)
+				event.subplaces[k].forEach((subplace,subid)=>{
+					validateEvent(errors, prefix+"subplace("+k+","+subid+")", subplace, flags);
+				})
+			else
+				logError(errors, prefix+"subplace("+k+")", "Empty subplace found. Remove the key instead.");
+
+}
+
+function isEqual(a,b) {
+	return JSON.stringify(a) == JSON.stringify(b);
+}
+
+function validateEventSet(errors, prefix, set) {
+	let
+		lockCodeFound = 0,
+		resources = {},
+		keys = {},
+		flags = { resourcesCount:0, keysCount:0, resources:{}, keys:{} },
+		testedOnlyForArea;
+
+	if (!set.data)
+		logError(errors, prefix, "Missing data");
+	else {
+		if (set.data.specialsAmount)
+			flags.isSpecialCards = true;
+
+		if (set.data.path) {
+			if (set.data.path.length) {
+				flags.isPath = true;
+				set.data.path.forEach((path,pathid)=>{
+					let
+						isAtArea = false,
+						subprefix;
+					path.forEach((event,eventid)=>{
+						if (event.atArea) {
+							event.atArea.forEach(area=>{
+								if (flags.minAtArea == undefined)
+									flags.minAtArea = area;
+								if (flags.maxAtArea == undefined)
+									flags.maxAtArea = area;
+								flags.minAtArea = Math.min(flags.minAtArea, area);
+								flags.maxAtArea = Math.max(flags.maxAtArea, area);
+							})
+							isAtArea = true;
+						}
+						validateEvent(errors, prefix+"path("+eventid+")", event, flags);
+					})
+					if (isAtArea && (path.length > 3))
+						flags.isLongPath = true;
+					if (isAtArea && (path.length == 3))
+						flags.isSlightlyLongPath = true;
+				})
+			} else
+				logError(errors, prefix, "Empty path found. Remove the key instead.");
+		}
+
+		if (set.data.lock)
+			if (set.data.lock.length) {
+				flags.isLock = true;
+				set.data.lock.forEach((lock,lockid)=>{
+					if (lock.code)
+						lockCodeFound++;
+					if (lock.addOverallCondition)
+						flags.isLockOverallCondition = true;
+					validateEvent(errors, prefix+"lock("+lockid+")", lock, flags);
+				})
+			} else
+				logError(errors, prefix, "Empty lock found. Remove the key instead.");
+
+		if (set.data.scatter) {
+			if (set.data.scatter.length) {
+				flags.isScatter = true;
+				set.data.scatter.forEach((scatter,scatterid)=>{
+					let
+						subprefix = prefix+"scatter("+scatterid+")";
+					if (!scatter.scatterUniformAmount)
+						logError(errors, subprefix, "Missing scatterUniformAmount attribute.");
+					validateEvent(errors, subprefix, scatter, flags);
+				});
+			} else
+				logError(errors, prefix, "Empty scatter found. Remove the key instead.");
+		}
+
+		if (flags.resourcesCount > 5) {
+			logError(errors, prefix, "Events can't require more than 5 resources.");
+		}
+
+		if (flags.keysCount > 1) {
+			logError(errors, prefix, "Events can't require more than 1 key.");
+		}
+
+		if (set.tags && (set.tags.indexOf("deadly") != -1)) {
+			flags.isDeadly = true;
+		}
+
+		if (
+			(flags.isScatter || flags.isLongPath) && !(
+				set.tags && (set.tags.indexOf("scatter") != -1)
+			)
+		) {
+			logError(errors, prefix, "Event with scatter or a long path on multiple areas must have the 'scatter' tag set.");
+		}
+
+		if (
+			!flags.isScatter && !flags.isLongPath && !(
+				!set.tags || (set.tags.indexOf("scatter") == -1)
+			)
+		) {
+			logError(errors, prefix, "Event with no scatter or short paths should not have the 'scatter' tag set.");
+		}
+
+		if (
+			flags.isSlightlyLongPath
+		) {
+			testedOnlyForArea = true;
+			if (!(
+				(flags.maxAtArea == -1) &&
+				isEqual(set.onlyForArea,ONLYFORAREA_LATER)
+			)) {
+				logError(errors, prefix, "Event with slightly long paths (3) onlyForArea:ONLYFORAREA_LATER and atArea:[-1] only");
+			}
+		}
+
+		if (
+			!flags.isInteraction
+		) {
+			testedOnlyForArea = true;
+			if (!(
+				lockCodeFound || flags.isLockOverallCondition || isEqual(set.onlyForArea,ONLYFORAREA_FIRST)
+			)) {
+				logError(errors, prefix, "Event set with no interaction should have onlyForArea:ONLYFORAREA_FIRST, some code creating a puzzle need exploring previous zones, or addOverallCondition on the lock");
+			}
+		}
+
+		if (
+			!flags.isPath
+		) {
+			testedOnlyForArea = true;
+
+			if (
+				flags.isLock
+			) {
+				if (
+					flags.isReplaceToSubplace
+				) {
+					 if (!
+					 	isEqual(set.onlyForArea,ONLYFORAREA_LAST)
+					 ) {
+					 	logError(errors, prefix, "Event set subplace replacing should have onlyForArea:ONLYFORAREA_LAST");
+					 }
+				} else if (!(
+					lockCodeFound || flags.isTeleportToGhost || isEqual(set.onlyForArea,ONLYFORAREA_EARLY)
+				)) {
+					logError(errors, prefix, "Event set with lock and no path (except for ghosts) should have onlyForArea:ONLYFORAREA_EARLY or code creating a puzzle need exploring previous zones");
+				}
+			} else if (!(
+				lockCodeFound || flags.isTeleportToGhost || isEqual(set.onlyForArea,ONLYFORAREA_FIRST)
+			)) {
+				logError(errors, prefix, "Event set with no lock and no path should have onlyForArea:ONLYFORAREA_FIRST or code creating a puzzle need exploring previous zones");
+			}
+		}
+
+		if (
+			flags.isInteractionNotBlocking
+		) {
+			testedOnlyForArea = true;
+			if (!(
+				lockCodeFound || isEqual(set.onlyForArea,ONLYFORAREA_EARLY)
+			)) {
+				logError(errors, prefix, "Event set with non blocking interactions should have onlyForArea:ONLYFORAREA_EARLY or code creating a puzzle need exploring previous zones");
+			}
+		}
+
+		if (
+			flags.isLockingExit
+		) {
+			testedOnlyForArea = true;
+			if (!(
+				isEqual(set.onlyForArea,ONLYFORAREA_FIRST) &&
+				(set.tags && (set.tags.indexOf("exitlock")!=-1))
+			)) {
+				logError(errors, prefix, "Locking exit events must have onlyForArea:ONLYFORAREA_FIRST and the 'exitlock' tag to not overlap");
+			}
+		}
+
+		if (flags.isTeleport) {
+			testedOnlyForArea = true;
+			if (!(
+				isEqual(set.onlyForArea,ONLYFORAREA_TELEPORTERS)
+			)) {
+				logError(errors, prefix, "Event set with teleports should have onlyForArea:ONLYFORAREA_TELEPORTERS to place them far");
+			}
+		}
+
+		if (flags.isDeadly) {
+			testedOnlyForArea = true;
+			if (!(
+				isEqual(set.onlyForArea,ONLYFORAREA_DEADLY)
+			)) {
+				logError(errors, prefix, "Event that may kill player should have onlyForArea:ONLYFORAREA_DEADLY to place them at last");
+			}
+		}
+
+		if (flags.isLongPath) {
+			testedOnlyForArea = true;
+			if (!(
+				isEqual(set.onlyForArea,ONLYFORAREA_LATER) || isEqual(set.onlyForArea,ONLYFORAREA_DEADLY)
+			)) {
+				logError(errors, prefix, "Event with long paths should have onlyForArea:ONLYFORAREA_LATER or onlyForArea:ONLYFORAREA_DEADLY");
+			}
+		}
+
+		if (flags.isInteraction && !flags.checkInteraction && !flags.isLock && !flags.isLockingExit)
+			logError(errors, prefix, "Interaction generated but never used");
+
+		if (!flags.isInteraction && flags.checkInteraction)
+			logError(errors, prefix, "Interaction checked but never generated");
+
+		if (!testedOnlyForArea && set.onlyForArea) {
+			logError(errors, prefix, "Unallowed onlyForArea pattern");
+		}
+
+		if (flags.isLock && !flags.isPath && !flags.isScatter)
+			flags.isLockOnly = true;
+	}
+
+	return flags;
+}
+
+function drawBullet(id, color1, color2) {
+	return "<span style='background-color:"+color1+";color:"+color2+";padding:2px;border-radius:4px;margin:2px 4px 2px 2px'>"+id+"</span>";
+}
+
+function makeStatsTable(testmode, columns, stats, columnCount) {
+	let
+		html="<table><tr><th>Feats</th><th>Cmplx</th><th>Event</th>";
+
+	columns.forEach(column=>{
+		html+="<th>"+column.symbol+"</th>";
+	})
+
+	html+="</tr>";
+
+	stats.forEach((stat,statid)=>{
+		let
+			row = "",
+			complexity = "",
+			complexityValue = 0,
+			features = 0;
+		html+="<tr>";
+		if (stat.flags.symbols) {
+			let
+				brains = Math.ceil(stat.flags.symbols/10);
+
+			complexityValue = stat.flags.symbols;
+			for (let i=0;i<brains;i++)
+				complexity+="&#x1F9E0;";
+		}
+		columns.forEach(column=>{
+			if (stat.flags[column.id]) {
+				if (!columnCount[column.id])
+					columnCount[column.id] = { description:column.description, symbol:column.symbol, count:0 };
+				columnCount[column.id].count++;
+				features++;
+				row+="<td><span title='"+column.description+"'>"+column.symbol+"</td>";
+			} else
+				row+="<td></td>";
+		})	
+		html+="<td>"+features+"</td><td style='white-space:nowrap' title='Complexity: "+complexityValue+"'>"+complexity+"</td><td style='cursor:pointer;"+(features?"":"color:#f00;font-weight:bold")+"' onclick='cardsTest("+testmode+",0,"+statid+")'>"+drawBullet(stat.uuid,"#000","#fff")+"<u>"+stat.event+"</u></td>"+row+"</tr>";
+	})
+
+	html+="</table>";
+
+	return html;
+}
+
+function makeGoalsTable(goals, total, columnCount, togo) {
+	let
+		html = "<h2>Goals:</h2><table><tr><th></th><th>Stat</th><th>Qty/Target</th><th>To go</th></tr>";
+
+	goals.forEach(goal=>{
+		if (columnCount[goal.id]) {
+			let
+				column = columnCount[goal.id],
+				goalValue = Math.ceil(total*goal.goal),
+				delta = goalValue - columnCount[goal.id].count;
+
+			html+="<tr>";
+			html+="<td>"+column.symbol+"</td><td>"+column.description+"</td>";
+			html+="<td style='text-align:center'><b>"+columnCount[goal.id].count+"</b>/"+goalValue+"</td>";
+			if (delta > 0)
+				html+="<td style=';background-color:"+heatColor(delta,togo)+"'>"+delta+" more to go!</td>";
+			else
+				html+="<td style='color:green'>"+(-delta)+" over the goal.</td>";
+			html+="</tr>";
+		}
+	})
+
+	html+="</table>";
+
+	return html;
+}
+
+function validateEvents() {
+	let
+		html,
+		columnCount = {},
+		ids = {},
+		stats = [],
+		errors = [],
+		togo = 0;
+
+	PASSAGES.forEach((eventset,idx)=>{
+		let
+			prefix = "event("+eventset.description+")",
+			flags = validateEventSet(errors, prefix,eventset);
+		stats.push({ uuid:eventset.uuid, event:eventset.description, flags:flags });
+		if (eventset.uuid != idx)
+			errors.push(prefix+" Not progressive ID. Found "+eventset.id+" Expected "+idx);
+		if (!eventset.uuid)
+			errors.push(prefix+" Missing id.");
+		else if (ids[eventset.uuid])
+			errors.push(prefix+" Duplicate id: "+eventset.uuid);
+		else
+			ids[eventset.uuid] = true;
+	})
+
+	if (errors.length)
+		html = "<h2>Errors:</h2>"+errors.join("<br>");
+	else {
+		togo = EVENTS_TARGET-stats.length;
+		html = "<h2>"+(stats.length)+"/"+EVENTS_TARGET+" events"+(stats.length<EVENTS_TARGET ? " ("+(togo)+" to go)":"")+":</h2>";			
+		html+=makeStatsTable(0, COLUMNS, stats, columnCount);
+		html+=makeGoalsTable(EVENTS_GOALS, EVENTS_TARGET, columnCount, togo);
+	}
+
+	document.getElementById("out").innerHTML = html;
+		
+}
+
+function validateSpecialCard(errors, prefix, special, flags) {
+	validateEvent(errors,prefix,special,flags);
+
+	if (flags.resourcesCount > 1) {
+		logError(errors, prefix, "Special cards can't require more than 1 resource.");
+	}
+
+	if (flags.keysCount) {
+		logError(errors, prefix, "Events can't require keys.");
+	}
+}
+
+function validateSpecials() {
+	let
+		html,
+		ids = {},
+		columnCount = {},
+		stats = [],
+		errors = [],
+		togo = 0;
+
+	SPECIALS.forEach((special,idx)=>{
+		let
+			value = special.uuid ? special.uuid.substr(1) : 0,
+			prefix = "special("+special.description+")",
+			flags = { resources:{}, keys:{}, resourcesCount:0, keysCount:0 };
+
+		validateSpecialCard(errors, prefix,special,flags);
+
+		if (value != idx)
+			errors.push(prefix+" Not progressive UUID. Found "+special.uuid+" Expected "+idx);
+		if (!special.uuid)
+			errors.push(prefix+" Missing id.");
+		else if (special.uuid[0]!="S")
+			errors.push(prefix+" Special card UUIDs must start with S");
+		else if (ids[special.uuid])
+			errors.push(prefix+" Duplicate UUID: "+special.uuid);
+		else
+			ids[special.uuid] = true;
+
+		stats.push({ uuid:special.uuid, event:special.description, flags:flags });
+	})
+
+	if (errors.length)
+		html = "<h2>Errors:</h2>"+errors.join("<br>");
+	else {
+		togo = SPECIALS_TARGET-stats.length;
+		html = "<h2>"+(stats.length)+"/"+SPECIALS_TARGET+" specials"+(stats.length<SPECIALS_TARGET ? " ("+togo+" to go)":"")+":</h2>";	
+		html+=makeStatsTable(1, COLUMNS, stats, columnCount);
+		html+=makeGoalsTable(SPECIALS_GOALS, SPECIALS_TARGET, columnCount, togo);
+	}
+
+	document.getElementById("out").innerHTML = html;
+}
+
+function percent(value,sign) {
+	return (sign && value>0 ? "+" : "")+(value*100).toFixed(2);
+}
+
+function finalizeStats(testprinting, step, seed, allStats, generation) {
+
+	let
+		isOk = true,
+		stats = generation.dungeon.stats();
+
+	for (let k in stats) {
+		let
+			value = stats[k];
+
+		switch (k) {
+			case "activitiesMap":{
+				if (!allStats[k])
+					allStats[k] = [];
+				stats[k].forEach((stat,pos)=>{
+					if (!allStats[k][pos])
+						allStats[k][pos] = 0;
+					allStats[k][pos]++;
+				})
+				break;
+			}
+			case "cells":
+			case "activityCells":
+			case "noActivityCells":
+			case "fillerEnemies":
+			case "enemies":{
+				if (!allStats[k])
+					allStats[k]=0;
+				allStats[k]+=stats[k];
+				break;
+			}
+			case "minActivities":{
+				if (allStats[k] == undefined)
+					allStats[k] = stats[k];
+				else if (stats[k] < allStats[k])
+					allStats[k] = stats[k];
+				break;	
+			}
+			case "maxActivities":{
+				if (allStats[k] == undefined)
+					allStats[k] = stats[k];
+				else if (stats[k] > allStats[k])
+					allStats[k] = stats[k];
+				break;	
+			}
+			case "activityRatio":{
+				break;	
+			}
+			default:{
+				isOk = false;
+				console.warn("Can't manage stat",k);
+			}
+		}
+	}
+
+	generation.selectedEvents.forEach(event=>{
+		let
+			id = PASSAGES.indexOf(event.event);
+		if (!allStats.eventsIndex[id])
+			allStats.eventsIndex[id] = 0;
+		allStats.eventsIndex[id]++;
+	})
+
+	allStats.specials += generation.selectedSpecials.length;
+	allStats.attempts += generation.attempts;
+	allStats.cardsForDeck += generation.deck.cards.length;
+	allStats.explorationSteps = generation.exploration.steps;
+	allStats.explorationSwaps = generation.exploration.swaps;
+	allStats.explorationKeeps = generation.exploration.keeps;
+
+	if (isOk)
+		if (step)
+			setTimeout(()=>{
+				collectStats(testprinting, 0, step, seed+1, allStats);
+			},10)
+		else {
+			document.getElementById("explorer").disabled="";
+			document.getElementById("devmode").disabled="";
+			document.getElementById("tutorial").disabled="";
+			document.getElementById("runstats").disabled="";
+			document.getElementById("validateevents").disabled="";
+			document.getElementById("calendar").disabled="";
+			document.getElementById("validatespecials").disabled="";
+			document.getElementById("swappinesstest").disabled="";
+			document.getElementById("cardsloadtest").disabled="";
+			document.getElementById("squeezetest").disabled="";
+			document.getElementById("drawingtest").disabled="";
+			document.getElementById("glyphtest").disabled="";
+			document.getElementById("passagetest").disabled="";
+			document.getElementById("specialstest").disabled="";
+
+			for (let k in allStats) {
+				let
+					value = allStats[k];
+
+				switch (k) {
+					case "activitiesMap":{
+						let
+							dk = "avg_"+k;
+
+						allStats[dk] = [];
+						allStats[k].forEach((stat,pos)=>{
+							allStats[dk][pos] = allStats[k][pos]/allStats.runs;
+						})
+						break;
+					}
+					case "explorationKeeps":
+					case "explorationSwaps":{
+						allStats["avg_"+k] = allStats[k]/allStats.explorationSteps;
+						break;
+					}
+					case "specials":
+					case "attempts":
+					case "cells":
+					case "activityCells":
+					case "noActivityCells":
+					case "fillerEnemies":
+					case "cardsForDeck":
+					case "enemies":{
+						allStats["avg_"+k] = allStats[k]/allStats.runs;
+						break;
+					}
+				}
+			}
+
+			allStats.activityRatio = allStats.activityCells / allStats.cells;
+
+			let
+				html = "<h2>Stats:</h2>",
+				idealPercentage = 1/PASSAGES.length,
+				eventCount = [],
+				eventsPerDungeon = 0;
+
+			GENERATOR.structure.forEach(step=>{
+				if (step.addPassage)
+					eventsPerDungeon++;
+			})
+
+			idealPercentage*=eventsPerDungeon;
+
+			PASSAGES.forEach((event,pos)=>{
+				let
+					value = allStats.eventsIndex[pos] || 0;
+				eventCount.push({ uuid:event.uuid, event:event.description, count:value, avg:value/allStats.runs });
+			})
+
+			eventCount.sort((a,b)=>{
+				if (a.count > b.count)
+					return -1;
+				else if (a.count < b.count)
+					return 1;
+				else
+					return 0;
+			})
+
+			allStats.eventCount = eventCount;
+			delete allStats.eventsIndex;
+
+			html+="<table><tr><th>Event</th><th colspan=2>Times</th><th colspan=2>Ideal / Error</th></tr>";
+			allStats.eventCount.forEach(event=>{
+				html+="<tr><td>"+drawBullet(event.uuid,"#000","#fff")+event.event+"</td><td style='white-space:nowrap'><div style='display:inline-block;height:10px;width:"+(100*event.avg)+"px;background-color:#f00'></div><div style='display:inline-block;height:10px;width:"+(100*(1-event.avg))+"px;background-color:#000'></div></td><td>"+percent(event.avg)+"%</td><td>"+percent(idealPercentage)+"%</td><td>"+percent(event.avg-idealPercentage,true)+"%</td></tr>";
+			})
+
+			html+="</table>";
+
+			html+="<hr>More stats on console log";
+
+			document.getElementById("out").innerHTML = html;
+
+			console.log(allStats);
+		}
+
+}
+
+function getCardId(card, full) {
+	return card.noCard ? "-" : card.index+(full?["ABCDE"][card.version]:"");
+}
+
+function findExitInCard(exp, cell, card) {
+	let
+		exits = [];
+	card.boxes.forEach(box=>{
+		box.items.forEach(item=>{
+			if (item.from && (item.from.id == cell) && item.to && item.camera) {
+				// Skip teleporters
+				if (
+					!item.teleportToSubplace &&
+					!item.teleportToRandomPlace
+				)
+					exits.push({ to:item.to, camera:item.camera });
+				// ...anyway teleporter cameras will be later validated as extra camera
+				if (item.teleportToRandomPlace) {
+					exp.extraCameras.push({x:item.to.x, y:item.to.y, cell:item.to.id, orientation:item.direction, camera:item.camera});
+				}
+			}
+		})
+	})
+	if (exits.length >1)
+		exp.errors.push("At "+cell+" card "+getCardId(card,true)+" has multiple exits. ("+exits.length+")");
+	return exits;
+}
+
+function findCardsForExit(exp, reqcard) {
+	return exp.generation.deck.cards.filter(card=>card.index==reqcard.index);
+}
+
+function buildCameraCards(exp, camera) {
+	return camera.map(card=>findCardsForExit(exp, card));
+}
+
+function addToMap(exp, x, y, cell, orientation, newcamera, prevcamera) {
+	if (--exp.bomb<0)
+		return;
+
+	if (prevcamera) {
+		let
+			swapsCount = 0;
+		exp.steps++;
+		newcamera.forEach((card,pos)=>{
+			if (card.noCard) {
+				if (prevcamera[pos].noCard) {
+					// No card -> Same no card: 2 keeps!
+					exp.keeps+=2;
+				} else {
+					// No card -> Card : 1 swap to remove card
+					swapsCount++;
+					exp.swaps++;
+				}
+			} else {
+				let
+					found = false;
+				prevcamera.forEach((prevcard,pos)=>{
+					if (prevcard.index == card.index)
+						found = pos;
+				})
+				if (found === false) {
+					if (prevcamera[pos].noCard) {
+						// Card -> no card: 1 swap to remove card
+						swapsCount++;
+						exp.swaps++;
+					} else {
+						// Card -> Another card: 1 swap to remove, 1 swap to pick
+						swapsCount+=2;
+						exp.swaps+=2;
+					}
+				} else {
+					if (found == pos) {
+						// Card -> Same card, same position: 2 keeps!
+						exp.keeps+=2;
+					} else {
+						// Card -> Same card, another place: 1 swap
+						swapsCount++;
+						exp.swaps++;
+					}
+				}
+			}
+		})
+		if (!exp.swapsMap[swapsCount])
+			exp.swapsMap[swapsCount] = 0;
+		exp.swapsMap[swapsCount]++;
+	}
+
+	if (exp.roomsIndex[cell]) {
+		if (
+			(exp.roomsIndex[cell].x != x) ||
+			(exp.roomsIndex[cell].y != y)
+		) {
+			exp.bomb = -1000;
+			exp.errors.push("Found "+cell+" at "+exp.roomsIndex[cell].x+","+exp.roomsIndex[cell].y+" but now found again at "+x+","+y);
+		} else {
+			// Later evaluate if the camera is right
+			exp.extraCameras.push({x:x, y:y, cell:cell, orientation:orientation, camera:newcamera})
+		}
+	} else {
+
+		if (!exp.map[y])
+			exp.map[y] = [];
+
+		if (!exp.map[y][x])
+			exp.map[y][x] = {
+				id:cell,
+				walls:[0,0,0,0],
+				exits:[0,0,0,0]
+			};
+
+		exp.roomsIndex[cell] = { x:x, y:y };
+
+		let
+			cameraCards = buildCameraCards(exp, newcamera);
+		CAMERAS[orientation].forEach((camera, id)=>{
+			let
+				exitFound = false,
+				directionCards = cameraCards[id],
+				compassOrientation = camera.direction,
+				newOrientation = (orientation+id+3)%4,
+				exitsForCard;
+
+			// For each card in direction, find the exits.
+			exitsForCards = directionCards.map(card=>findExitInCard(exp, cell, card));
+
+			exitsForCards.forEach(exitforcard=>{
+				exitforcard.forEach(exit=>{
+					// Map a room
+					let
+						dx = x+camera.x,
+						dy = y+camera.y,
+						dcell = exit.to.id;
+
+					exitFound = true;
+					exp.map[y][x].exits[compassOrientation] = {
+						id:dcell,
+						x:dx,
+						y:dy,
+					};
+					if (dcell == cell)
+						exp.errors.push("From "+x+","+y+" ("+cell+") to "+dx+","+dy+" ("+dcell+") goes to the same place");
+					else {
+						// Explore it!
+						addToMap(exp, dx, dy, dcell, newOrientation, exit.camera, newcamera);
+					}
+				})
+			})
+
+			if (!exitFound)
+				exp.map[y][x].walls[compassOrientation] = true;
+		})
+	}
+}
+
+function symbolDump(root,list,k) {
+	if (!list)
+		list = [];
+	if (typeof root == "string") {
+		root.replace(/\{(symbol [^}\" ]+)}/g,(m,m1)=>{
+			if (list.indexOf(m1) == -1)
+				list.push(m1)
+		})
+		root.replace(/\"(amulet[A-Z][a-zA-Z]+)/g,(m,m1)=>{
+			if (list.indexOf(m1) == -1)
+				list.push("symbol "+m1)
+		})
+	} else if (typeof root == "object") {
+		if (k == "cutout")
+			root.forEach(cut=>{
+				if (cut.type == "symbol") {
+					let
+						m1 = "cutout "+cut.id;
+					if (list.indexOf(m1) == -1)
+						list.push(m1)
+				}
+			})
+		else
+			for (let k in root)
+				symbolDump(root[k], list, k);
+	} if (typeof root == "function") {
+		symbolDump(root.toString(), list);
+	}
+	return list;
+}
+
+function cardsTest(mode, seed, id) {
+	let
+		printer = new DungeonPrinter(),
+		language = "EN",
+		generation,
+		passages,
+		specials,
+		selected,
+		options;
+		
+	if (!seed)
+		seed = Math.ceil(Math.random()*100000);
+	if (!id)
+		id = 0;
+
+	switch (mode) {
+		case 0:{
+			
+			if (id<0)
+				id = PASSAGES.length+id;
+			id = id % PASSAGES.length;
+			selected = PASSAGES[id];
+
+			options = PASSAGES.map((item,pid)=>{
+				return "<option "+(pid == id ? "selected": "")+" value='"+pid+"'>["+(item.uuid)+"] - "+item.description+"</option>"
+			})
+
+			passages = PASSAGES.map(p=>{
+				let
+					copy = {};
+
+				for (let k in p)
+					copy[k] = p[k];
+
+				copy._debug = p == selected;
+				copy._hilight = copy._debug;
+				return copy;
+			})
+
+			specials = SPECIALS;
+			break;
+		}
+		case 1:{
+			if (id<0)
+				id = SPECIALS.length+id;
+			id = id % SPECIALS.length;
+			selected = SPECIALS[id];
+
+			options = SPECIALS.map((item,pid)=>{
+				return "<option "+(pid == id ? "selected": "")+" value='"+pid+"'>["+item.uuid+"] - "+item.description+"</option>"
+			})
+
+			passages = PASSAGES.map(p=>{
+				let
+					copy = {};
+
+				for (let k in p)
+					copy[k] = p[k];
+
+				copy._debug = p.data.specialsAmount;
+				return copy;
+			})
+
+			specials = SPECIALS.map(p=>{
+				let
+					copy = {};
+
+				for (let k in p)
+					copy[k] = p[k];
+
+				copy._debug = p == selected;
+				copy._hilight = copy._debug;
+
+				return copy;
+			})
+
+			break;
+		}
+	}
+
+	document.getElementById("out").innerHTML=
+		"<input type=button onclick='cardsTest("+mode+",0,"+id+")' value='Seed'>: "+seed+" | "+
+		"<input type=button onclick='cardsTest("+mode+","+seed+","+(id-1)+")' value='&laquo;'> "+
+		"<select onchange='cardsTest("+mode+","+seed+",this.value)'>"+options+"</select>"+
+		"<input type=button onclick='cardsTest("+mode+","+seed+","+(id+1)+")' value='&raquo;'>"+
+		"<hr><div id='printout'></id>";
+
+	generation = Generator({
+		_debug:true,
+		generator:GENERATOR,
+		passages:passages,
+		specials:specials,
+		resources:LOADED_RESOURCES,
+		gameData:{},
+		gameProgress:FAKEPROGRESS,
+	}, language, seed);
+
+	generation.deck.cards.forEach(card=>{
+		let
+			title = card.generatedBy.map(generatedby=>generatedby.description).join("\n");
+		card._title = title || "(Maze card)";
+	})
+
+	generation.deck.cards = generation.deck.cards.filter(card=>{
+		let
+			isHilighted;
+		card.generatedBy.forEach(generator=>{
+			if (generator._hilight)
+				isHilighted = true;
+		})
+		return isHilighted;
+	});
+
+	printer.print({
+		border:true,
+		deck:GENERATOR.deck,
+		cardsOnly:true,
+		root:"../../",
+	},BIOMES[0],generation.deck,language,(result)=>{
+		DEBUGTOOLS.printPreview(document.getElementById("printout"), "cardstest", result);
+	});
+}
+
+function dumpSymbolsToCard(boxes, fromcard, set, rowsize, pagesize) {
+	let
+		line = -1;
+
+	set.forEach((res,id)=>{
+		if (id % rowsize == 0)
+			line++;
+		if (line == pagesize) {
+			fromcard++;
+			line = 0;
+		}
+		if (!boxes[fromcard][line])
+			boxes[fromcard][line] = { line:"" };
+		if (res.startsWith("cutout "))
+			boxes[fromcard][line].cutout=[{ type:"symbol", id:res.substr(7) }];
+		else
+			boxes[fromcard][line].line+="{"+res+"}";
+	})
+	return fromcard+1;
+}
+
+function glyphTest() {
+	let
+		printer = new DungeonPrinter(),
+		allSymbols = [],
+		schemas,
+		amulets,
+		language = "EN",
+		boxes = [],
+		actions = [],
+		fromcard = 0,
+		generation = {
+			deck:{
+				meta:{
+					startingCamera:[{ noCard:true },{ noCard:true },{ noCard:true },{ noCard:true }]
+				},
+				cards:[]
+			}
+		};
+
+	symbolDump(PASSAGES, allSymbols);
+	symbolDump(GENERATOR, allSymbols);
+	symbolDump(EXITS, allSymbols);
+	symbolDump(SPECIALS, allSymbols);
+	
+	schemas = allSymbols.filter(a=>a.startsWith("symbol schema")||a.startsWith("symbol grid")||a.startsWith("cutout")||a.startsWith("symbol tangramPuzzle")||a.startsWith("symbol amulet"));
+	allSymbols = allSymbols.filter(a=>schemas.indexOf(a)==-1);
+
+	for (let k in printer.ACTIONS)
+		actions.push(k);
+
+	for (let i=0;i<45;i++) {
+		let
+			action = actions[i%actions.length],
+			items = [];
+
+		if ((action != "flip") && (action!="rotate"))
+			boxes.push(items);
+
+		generation.deck.cards.push({ setIndex:i+1, setSymbol:0, isInstant:i%2, version:i%3, type:[], noCard:true, flipType:[], cardCode:"TEST", boxes:[{ id:action, items:items }] });
+	}
+
+	fromcard = dumpSymbolsToCard(boxes, fromcard, RESOURCES.map(a=>"symbol "+a), 10, 10);
+	fromcard = dumpSymbolsToCard(boxes, fromcard, VERBS.map(a=>"symbol "+a), 10, 10);
+	fromcard = dumpSymbolsToCard(boxes, fromcard, SUBJECTS.map(a=>"symbol "+a), 10, 10);
+	fromcard = dumpSymbolsToCard(boxes, fromcard, allSymbols, 10, 2);
+	fromcard = dumpSymbolsToCard(boxes, fromcard, schemas, 1, 1);
+
+	document.getElementById("out").innerHTML = "";
+
+	printer.print({
+		border:true,
+		deck:GENERATOR.deck,
+		root:"../../",
+	},BIOMES[0],generation.deck,language,(result)=>{
+		DEBUGTOOLS.printPreview(document.getElementById("out"), "glyphtest", result);
+	});
+}
+
+function drawingtest() {
+	let
+		CELL_SIZE = 20,
+		OX = CELL_SIZE/2,
+		OY = CELL_SIZE/2,
+		out = document.getElementById("out");
+
+	out.innerHTML = "";
+
+	for (let k in HELPERS.GRID_SYMBOLS) {
+		HELPERS.GRID_SYMBOLS[k].forEach(symbol=>{
+			symbol.coords.forEach(coords=>{
+				let
+					title = document.createElement("h2"),
+					canvas = document.createElement("canvas"),
+					ctx = canvas.getContext("2d");
+
+				title.innerHTML = "Symbol: "+k;
+				out.appendChild(title);
+
+				canvas.width = CELL_SIZE*symbol.size[0];
+				canvas.height = CELL_SIZE*symbol.size[1];
+
+				ctx.strokeStyle="#ccc";
+				for (let x=0;x<symbol.size[0];x++)
+					for (let y=0;y<symbol.size[1];y++)
+						ctx.strokeRect(x*CELL_SIZE,y*CELL_SIZE,CELL_SIZE,CELL_SIZE);
+				
+				ctx.strokeStyle="#000";
+				ctx.beginPath();
+				ctx.moveTo(OX+coords[0][0]*CELL_SIZE, OY+coords[0][1]*CELL_SIZE);
+				coords.forEach(coord=>{
+					ctx.lineTo(OX+coord[0]*CELL_SIZE, OY+coord[1]*CELL_SIZE);
+				})
+				ctx.stroke();
+
+				out.appendChild(canvas);
+			})
+		})
+	}
+}
+
+function squeezeTest() {
+	let
+		SQUEEZETEST_TESTS = [
+			[],
+			[ 1 ],
+			[ 0, 1 ],
+			[ 0, 0, 1 ],
+			[ 0, 0, 0, 1 ],
+			[ 0, 0, 0, 0, 1 ],
+			[ -1 ],
+			[ 0, -1 ],
+			[ 0, 0, -1 ],
+			[ 0, 0, 0, -1 ],
+			[ 0, 0, 0, 0, -1 ],
+			[ 0, 0, 0, 1, -1 ],
+			[ 0, 0, 1, 0, -1 ],
+			[ 0, 1, 0, 0, -1 ],
+			[ 1, 0, 0, 0, -1 ],
+		],
+		html = "",
+		language = "EN",
+		seed = Math.floor(Math.random()*100000),
+		errors = [],
+		packAttempts = 20,
+		stepPerTest = 200,
+		generation,
+		results = [];
+
+	results = SQUEEZETEST_TESTS.map((test,id)=>{
+		console.log("Squeeze test",id+1,"/",SQUEEZETEST_TESTS.length);
+
+		let
+			packAttemptsLeft = 0,
+			moddedGenerator = {};
+
+		for (let k in GENERATOR)
+			moddedGenerator[k] = GENERATOR[k];
+
+		moddedGenerator.structure = moddedGenerator.structure.map((step,id)=>{
+			let
+				copy = {};
+
+			for (let k in step)
+				copy[k] = step[k];
+
+			if (test[id])
+				copy.crawlFor += test[id];
+
+			return copy;
+		})
+
+		for (let i=0;i<stepPerTest;i++) {
+			generation = Generator({
+				packAttempts:packAttempts,
+				generateAttempts:100,
+				generator:moddedGenerator,
+				passages:PASSAGES,
+				specials:SPECIALS,
+				resources:LOADED_RESOURCES,
+				gameData:{},
+				gameProgress:FAKEPROGRESS,
+			}, language, seed+i);
+			packAttemptsLeft += generation.packAttemptsLeft;
+		}
+
+		return { test:id, packAttemptsLeft:packAttemptsLeft / stepPerTest };
+	})
+
+	results.sort((a,b)=>{
+		if (a.packAttemptsLeft > b.packAttemptsLeft)
+			return -1;
+		else if (a.packAttemptsLeft < b.packAttemptsLeft)
+			return 1;
+		else
+			return 0;
+	});
+	
+	html+="<table><th>Strategy</th><th>Attempts left</th></tr>";
+	results.forEach((result,id)=>{
+		let
+			label = SQUEEZETEST_TESTS[result.test].map((a,pos)=>a && ("Step "+pos+" "+(a>0?"+"+a:a)+" crawlFor")).filter(a=>a).join(", ");
+
+		if (!label)
+			label = "As-is";
+
+		html+="<tr><td>"+label+"</td><td style='background-color:"+heatColor(result.packAttemptsLeft,packAttempts,true)+"'>"+result.packAttemptsLeft.toFixed(2)+"</td></tr>";
+	})
+	html+="</table>";
+
+	document.getElementById("out").innerHTML = html;
+}
+
+function cardsLoadTest() {
+	let
+		seed = Math.floor(Math.random()*100000),
+		errors = [],
+		stepPerTest = 10,
+		language = "EN",
+		generator = JSON.parse(JSON.stringify(GENERATOR)),
+		generation,
+		exp,
+		results,
+		maxCards= 0,
+		html = "<h2>Results:</h2>",
+		debugs = [];
+	
+	results = PASSAGES.map(passage=>{
+		let
+			moddedPassage = {},
+			passages = [ moddedPassage ],
+			stats = { uuid:passage.uuid, description:passage.description, passage:passage, cards:0 };
+
+		console.log("Testing",passage.description);
+
+		for (let k in passage)
+			moddedPassage[k] = passage[k];
+
+		moddedPassage.data = {};
+		moddedPassage._isTested = true;
+		moddedPassage._debug = true;
+
+		for (let k in passage.data)
+			moddedPassage.data[k] = passage.data[k];
+
+		delete moddedPassage.data.specialsAmount;
+
+		for (let i=0;i<generator.structure.length-1;i++)
+			passages.push({
+				data:{
+					path:[
+						[
+							{
+								id:true,
+								type:[ [ "biomeWall" ], [ "imageElementLever" ] ],
+								boxes:[
+									{ interact:[ { interactionId:0 } ] },
+								]
+							}
+						]
+					],
+					lock:[ { id:true, type:[ [ "biomeWall" ], [ "imageElementBars" ] ], } ]
+				}
+			});
+
+		for (let i=0;i<stepPerTest;i++) {
+			let
+				runCards = 0;
+
+			generation = Generator({
+				_debug:true,
+				generator:generator,
+				passages:passages,
+				specials:SPECIALS,
+				resources:LOADED_RESOURCES,
+				gameData:{},
+				gameProgress:FAKEPROGRESS,
+			}, language, seed+i);
+
+			generation.deck.cards.forEach(card=>{
+				card.generatedBy.forEach(generatedby=>{
+					if (generatedby._isTested)
+						runCards++;		
+				})
+			})
+
+			if (!i)
+				stats.debug = generation.dungeon.debug() + generation.deck.debug();
+
+			stats.cards += runCards;
+
+			if (runCards > maxCards)
+				maxCards = runCards;
+		}
+
+		return stats;
+	});
+
+	results.sort((a,b)=>{
+		if (a.cards > b.cards)
+			return 1;
+		else if (a.cards < b.cards)
+			return -1;
+		else
+			return 0;
+	});
+
+	html+="<table><th>Method</th><th>Added cards</th><th>Suggested specialsAmount</th><th>Found specialsAmount</th></tr>";
+	results.forEach((result,id)=>{
+		let
+			added = Math.ceil(result.cards/stepPerTest),
+			suggested = Math.min(maxCards-added, 2),
+			found = result.passage.data.specialsAmount || 0;
+		html+="<tr><td style='cursor:pointer' onclick=\"document.getElementById('showresult').innerHTML=document.getElementById('showresult')._results["+id+"].debug\">"+drawBullet(result.uuid,"#000","#fff")+result.description+"</td><td>"+added+"</td><td>"+suggested+"</td><td style='background-color:"+(found && (found < suggested) ? "#f99" : found > suggested ? "#f00;color:#fff'" : "#0f0")+"'>"+found+"</td><tr>";
+	})
+	html+="</table><hr><hr><div id='showresult'></div>";
+
+	document.getElementById("out").innerHTML = html;
+	document.getElementById('showresult')._results = results;
+
+}
+
+function heatColor(value,top,invert) {
+	let
+		vf = Math.min(1,Math.max(0,value/top)),
+		cm;
+
+	if (invert)
+		vf = 1-vf;
+	cm = 1-vf;
+
+	return "rgb("+(100+155*vf)+","+(100+155*cm)+",100)";
+}
+
+function swappinessTest() {
+	let
+		SWAPTESTS = 20,
+		seed = Math.floor(Math.random()*100000),
+		errors = [],
+		stepPerTest = 50,
+		language = "EN",
+		generator = JSON.parse(JSON.stringify(GENERATOR)),
+		generation,
+		exp,
+		results,
+		html = "<h2>Results:</h2>";
+
+	results = SWAPPINESS_TESTS.map(test=>{
+		let
+			stats = { description:test.description, swapsMap:[], swaps:0, keeps:0, steps:0 };
+
+		console.log("Testing",test.description);
+
+		generator.deck = test;
+		for (let i=0;i<stepPerTest;i++) {
+			generation = Generator({
+				generator:generator,
+				passages:PASSAGES,
+				specials:SPECIALS,
+				resources:LOADED_RESOURCES,
+				gameData:{},
+				gameProgress:FAKEPROGRESS,
+			}, language, seed+i);
+			exp = exploreDeck(errors, generation);
+			stats.swaps+=exp.swaps;
+			stats.keeps+=exp.keeps;
+			stats.steps+=exp.steps;
+			for (let i=0;i<SWAPTESTS;i++) {
+				if (exp.swapsMap[i]) {
+					if (!stats.swapsMap[i])
+						stats.swapsMap[i] = 0;
+					stats.swapsMap[i]+=exp.swapsMap[i];
+				}
+			}
+		}
+
+		return stats;
+	});
+
+	results.sort((a,b)=>{
+		if (a.swaps > b.swaps)
+			return 1;
+		else if (a.swaps < b.swaps)
+			return -1;
+		else
+			return 0;
+	});
+
+	html+="<table><tr><th colspan=2></th><th colspan=6>Swaps</th></tr><tr><th>Method</th><th>Swaps per step</th>";
+	for (let i=0;i<SWAPTESTS;i++)
+		html+="<th>"+i+"</th>";
+		
+	html+="</tr>";
+	results.forEach(result=>{
+		html+="<tr><td>"+result.description+"</td><td>"+(result.swaps/result.steps).toFixed(2)+"</td>";
+		for (let i=0;i<SWAPTESTS;i++) {
+			let
+				value = Math.ceil(result.swapsMap[i]/stepPerTest);
+			html+="<td style='text-align:center;width:20px;background-color:"+(result.swapsMap[i] ? heatColor(value,15) : "#fff")+"'>"+(result.swapsMap[i] ? value : "-")+"</td>";
+		}
+		html+="</tr>";
+	})
+	html+="</table>";
+
+	document.getElementById("out").innerHTML = html;
+}
+
+function exploreDeck(errors, generation) {
+	let
+		exp = { bomb:1000, steps:0, keeps:0, swaps:0, swapsMap:[], map:[], extraCameras:[], roomsIndex:{}, errors:errors, generation:generation };
+
+	addToMap(exp, 0, 0, "A", 0, generation.deck.meta.startingCamera);
+
+	return exp;
+}
+
+
+function validateGeneration(generation) {
+	let
+		exp,
+		errors = [];
+		
+	generation.deck.cards.forEach((card,cid)=>{
+		let
+			cardId = getCardId(card);
+
+		card.boxes.forEach(box=>{
+			box.items.forEach(item=>{
+				if (item.camera) {
+					let
+						found = {};
+
+					if (generation.settings.generator.deck.avoidFromCardInDirections && !item.atFakePlace) {
+						found[cardId] = true;
+					}
+					item.camera.forEach(subcard=>{
+						if (!subcard.noCard) {
+							let
+								subcardId = getCardId(subcard);
+							if (found[subcardId]) {
+								errors.push("Card "+cardId+": can't use "+subcardId+" multiple times");
+							} else
+								found[subcardId] = true;
+						}
+					})
+				}
+			})
+		})
+	});
+
+	exp = exploreDeck(errors, generation);
+
+	if (exp.bomb<0)
+		errors.push("Looping while exploring the dungeon...");
+	else {
+		// --- Validate the extra cameras collected during exploration
+		exp.extraCameras.forEach(extracamera=>{
+			let
+				camera = extracamera.camera,
+				orientation = extracamera.orientation,
+				x = extracamera.x,
+				y = extracamera.y,
+				cell = extracamera.cell,
+				cameraCards = buildCameraCards(exp, camera);
+
+			CAMERAS[orientation].forEach((camera, id)=>{
+				let
+					exitFound = false,
+					directionCards = cameraCards[id],
+					compassOrientation = camera.direction,
+					newOrientation = (orientation+id+3)%4,
+					exitsForCard;
+
+				// For each card in direction, find the exits.
+				exitsForCards = directionCards.map(card=>findExitInCard(exp, cell, card));
+
+				exitsForCards.forEach(exitforcard=>{
+					exitforcard.forEach(exit=>{
+						let
+							dx = x+camera.x,
+							dy = y+camera.y,
+							dcell = exit.to.id,
+							orient = exp.map[y][x].exits[compassOrientation];
+
+						exitFound = true;
+
+						if (orient.id != dcell)
+							exp.errors.push("Coming back to "+x+","+y+" ("+cell+"), camera "+id+" expected to see cell "+dcell+" but previously found "+orient.id);
+
+						if (orient.x != dx)
+							exp.errors.push("Coming back to "+x+","+y+" ("+cell+"), camera "+id+" expected to see cell "+dcell+" at X "+dx+" but previously found at X "+orient.x);
+
+						if (orient.y != dy)
+							exp.errors.push("Coming back to "+x+","+y+" ("+cell+"), camera "+id+" expected to see cell "+dcell+" at Y "+dy+" but previously found at Y "+orient.y);
+					})
+				})
+
+				if (exp.map[y][x].walls[compassOrientation] == exitFound) {
+					if (exitFound)
+						exp.errors.push("Coming back to "+x+","+y+" ("+cell+"), camera "+id+" expected to see an exit but previously found a wall");
+					else
+						exp.errors.push("Coming back to "+x+","+y+" ("+cell+"), camera "+id+" expected to see a wall but previously found an exit");
+				}
+			});
+		})
+
+		// --- Match the exploration map with the true dungeon map
+		generation.dungeon.cells.forEach(cell=>{
+			let
+				mappedCell;
+
+			if (exp.map[cell.y])
+				mappedCell = exp.map[cell.y][cell.x];
+			if (mappedCell) {
+				if (mappedCell.id != cell.id)
+					errors.push("Exploration map mismatch at "+cell.x+","+cell.y+" (Found "+mappedCell.id+", expected "+cell.id+")");
+				mappedCell.walls.forEach((wall,wallid)=>{
+					if (wall && !cell.walls[wallid])
+						errors.push("Cell walls mismatch at "+cell.x+","+cell.y+" ("+cell.id+") wall "+wallid+" (Found but not expected)");
+					else if (!wall && cell.walls[wallid]) {
+						debugger;
+						errors.push("Cell walls mismatch at "+cell.x+","+cell.y+" ("+cell.id+") wall "+wallid+" (Not found but expected)");
+					}
+				})
+
+				mappedCell.exits.forEach((exit,exitid)=>{
+					if (exit && !cell.exits[exitid])
+						errors.push("Cell exit mismatch at "+cell.x+","+cell.y+" ("+cell.id+") exit "+exitid+" (Found but not expected)");
+					else if (!exit && cell.exits[exitid])
+						errors.push("Cell exit mismatch at "+cell.x+","+cell.y+" ("+cell.id+") wall "+exitid+" (Not found but expected)");
+					else if (exit.id != cell.exits[exitid].id)
+						errors.push("Cell exit matches but to different cells "+cell.x+","+cell.y+" ("+cell.id+") wall "+exitid+" (Found "+exit.id+" but expected "+cell.exits[exitid].id+")");
+				})
+
+			} else {
+				errors.push("Exploration map missing cell "+cell.x+","+cell.y+" (Expected "+cell.id+")");
+			}
+		})
+	
+		// --- Validate card boxes
+		generation.deck.cards.forEach(card=>{
+			if (card.boxes)
+				card.boxes.forEach(box=>{
+					box.items.forEach(row=>{
+						if (row.fromCard) {
+							if ((row.fromCard.setIndex != row.toCard.setIndex) || (row.fromCard.setSymbol != row.toCard.setSymbol) || (row.fromCard.version != row.toCard.version-1)) {
+								errors.push("Card "+card.index+": Swap index is not the same: "+row.fromCard.setIndex+"s"+row.toCard.setSymbol+" to "+row.toCard.setIndex+"s"+row.toCard.setSymbol);
+							}
+						}
+					})
+				})
+		})
+	}
+
+	generation.exploration = exp;
+
+	return errors;
+}
+
+function collectStats(testprinting, testtoday, step, seed, allStats) {
+
+	let
+		errors,
+		language = "EN",
+		generation;
+
+	if (step === undefined) {
+		step = 1000;
+		if (testtoday)
+			seed = Generator.getTodaySeed()-7;
+		else
+			seed = Math.floor(Math.random()*100000);
+		allStats = { runs:0, prints:0, printedPages:0, attempts:0, specials:0, cardsForDeck:0, eventsIndex:{}, failedCards:0, failedPrints:[] };
+	}
+
+	if (step % 10 == 0) {
+		document.getElementById("out").innerHTML = "Seed "+seed+" / "+step+" left.";
+		console.log("Seed",seed,"/",step,"left");
+	}
+
+	generation = Generator({
+		generator:GENERATOR,
+		passages:PASSAGES,
+		specials:SPECIALS,
+		resources:LOADED_RESOURCES,
+		gameData:{},
+		gameProgress:FAKEPROGRESS,
+	}, language, seed);
+
+	errors = validateGeneration(generation);
+
+	if (errors.length) {
+		console.warn("Error validating seed",seed);
+		errors.forEach(error=>console.warn(error));
+	} else {
+
+		step--;
+		allStats.runs++;
+
+		if (testprinting) {
+			let
+				printer = new DungeonPrinter();
+
+			printer.print({
+				root:"../../",
+				border:true,
+				deck:GENERATOR.deck
+			},generation.biome,generation.deck,language,(result)=>{
+				let
+					isOk = true;
+
+				if (result.pages.length == 3) {
+					allStats.prints++;
+					allStats.printedPages+=result.pages.length;
+				} else {
+					isOk = false;
+					console.warn("Invalid pages number for seed",seed);
+				}
+
+				if (!result.isValid) {
+					isOk = false;
+					allStats.failedCards += result.invalidCards.length;
+					console.warn("Card too long for seed",seed,":",(result.invalidCards.map(card=>card.setIndex+"v"+card.version).join(", ")));
+				}
+
+				if (!isOk) {
+					allStats.failedPrints.push(seed);
+				}
+
+				finalizeStats(testprinting, step, seed, allStats, generation);
+			});
+
+		} else
+			finalizeStats(testprinting, step, seed, allStats, generation)
+	}
+
+}
+
+function runStats() {
+
+	document.getElementById("explorer").disabled="disabled";
+	document.getElementById("devmode").disabled="disabled";
+	document.getElementById("tutorial").disabled="disabled";
+	document.getElementById("runstats").disabled="disabled";
+	document.getElementById("validateevents").disabled="disabled";
+	document.getElementById("calendar").disabled="disabled";
+	document.getElementById("validatespecials").disabled="disabled";
+	document.getElementById("swappinesstest").disabled="disabled";
+	document.getElementById("cardsloadtest").disabled="disabled";
+	document.getElementById("squeezetest").disabled="disabled";
+	document.getElementById("drawingtest").disabled="disabled";
+	document.getElementById("glyphtest").disabled="disabled";
+	document.getElementById("passagetest").disabled="disabled";
+	document.getElementById("specialstest").disabled="disabled";
+	collectStats(document.getElementById("testprinting").checked,document.getElementById("testtoday").checked);
+
+}
+
+function devMode() {
+	if (localStorage)
+		localStorage[LOCALSTORAGE_ID] = "devmode";
+
+	DEBUGTOOLS.explorer(DEBUGTOOLS.DEVMODE_ON, "../../", LOADED_RESOURCES, "dev-", document.getElementById("out"), true);
+}
+
+function explorer(seed) {
+	if (localStorage)
+		localStorage[LOCALSTORAGE_ID] = "explorer";
+
+	DEBUGTOOLS.explorer(DEBUGTOOLS.DEVMODE_OFF, '../../',LOADED_RESOURCES,'',document.getElementById('out'),false,seed)
+}
+
+function tutorial() {
+	if (localStorage)
+		localStorage[LOCALSTORAGE_ID] = "tutorial";
+
+	DEBUGTOOLS.explorer(DEBUGTOOLS.DEVMODE_TUTORIAL, '../../',LOADED_RESOURCES,'tutorial-',document.getElementById('out'),true,0,TUTORIAL_SEED)
+}
+
+function calendar() {
+	location.hash = "#";
+
+	setTimeout(()=>{
+		let
+			calendar = DEBUGTOOLS.makeCalendar(LOADED_RESOURCES,-2,30),
+			html = "";
+
+		calendar.forEach(row=>{
+			html+="<h2><a href='#' id='delta_"+row.delta+"' style='"+(row.delta == 0 ? "color:#f00" : "")+"' onclick='explorer("+row.delta+")'>"+row.dateString+"</a> (";
+			if (row.delta == -1)
+				html+="yesterday";
+			else if (row.delta == 1)
+				html+="tomorrow";
+			else if (row.delta == 0)
+				html+="TODAY";
+			else if (row.delta<0)
+				html+=-row.delta+" days ago";
+			else
+				html+=row.delta+" days";
+			html+=")</h2>";
+
+			html+="<h3>Events</h3>";
+			html+="<ul>";
+			row.generation.selectedEvents.forEach(event=>{
+				html+="<li><b>Area "+event.area+"</b>: ["+event.event.uuid+"] "+event.event.description+"</li>";
+			})
+			html +="</ul>";
+
+			if (row.generation.selectedSpecials.length) {
+				html+="<h3>Specials</h3>";
+				html+= "<ul>";
+				row.generation.selectedSpecials.forEach(event=>{
+					html+="<li>["+event.uuid+"] "+event.description+"</li>";
+				})
+				html +="</ul>";
+			}
+
+		})
+
+		document.getElementById("out").innerHTML = html;
+		location.hash = "#delta_0";
+
+	},500);
+
+	document.getElementById("out").innerHTML = "Wait...";
+}
+
+function onl() {
+	LOADED_RESOURCES = new Resources({ prefix:"../../"});
+	LOADED_RESOURCES.load(()=>{
+		let
+			mode = "dev";
+		if (localStorage && localStorage[LOCALSTORAGE_ID])
+			mode = localStorage[LOCALSTORAGE_ID];
+
+		switch (mode) {
+			case "devmode":{
+				devMode();
+				break;
+			}
+			case "tutorial":{
+				tutorial();
+				break;
+			}
+			default: {
+				explorer();
+				break;
+			}
+		}
+	});
+}
+
+
+</script>
+
