@@ -17,6 +17,7 @@ const
     SYMBOLDISTANCE=9.5;
 
 let
+    DONOTBREAK = [ ",", ".", ":", ";", "!", "?" ],
     SIZERATIO = 1,
     ITALICSPACING = 0;
 
@@ -208,8 +209,8 @@ function CardPrinter(svg,modelid,x,y) {
 
         let setBold=(node)=>{
             let span=node.querySelector("tspan");
-            span.setAttribute("style",span.getAttribute("style").replace(/font-family:[^;]+/,"font-family:Garamond"));
             span.setAttribute("style",span.getAttribute("style").replace("font-weight:normal","font-weight:bold"));
+            
         }
 
         let printWord=()=>{
@@ -303,8 +304,10 @@ function CardPrinter(svg,modelid,x,y) {
                             break;
                         }
                         case "spacing":{
+                            if (cursorX)
+                                cursorX+=wordSpacing;
                             wordSpacing = parseFloat(parts[1]);
-                            cursorX-=wordSpacing
+                            cursorX-=wordSpacing;
                             break;
                         }
                         case "endspacing":{
@@ -345,7 +348,10 @@ function CardPrinter(svg,modelid,x,y) {
                 }
                 if (node) {
                     if (node.size) {
-                        if (cursorX) cursorX+=wordSpacing;
+                        if (DONOTBREAK.indexOf(word[0]) == -1) {
+                            if (cursorX)
+                                cursorX+=wordSpacing;
+                        }
                         if (cursorX+node.size.width>width)
                             newLine();
                         node.x=cursorX;
